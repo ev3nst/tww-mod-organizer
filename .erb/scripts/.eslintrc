@@ -1,8 +1,11 @@
 {
-  "rules": {
-    "no-console": "off",
-    "global-require": "off",
-    "import/no-dynamic-require": "off",
-    "import/no-extraneous-dependencies": "off"
-  }
+    "extends": ["plugin:prettier/recommended"],
+    "plugins": ["prettier"],
+    "rules": {
+        "no-console": "off",
+        "global-require": "off",
+        "import/no-dynamic-require": "off",
+        "import/no-extraneous-dependencies": "off",
+        "prettier/prettier": ["error", { "endOfLine": "auto" }]
+    }
 }
