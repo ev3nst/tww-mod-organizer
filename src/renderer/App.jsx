@@ -1,50 +1,57 @@
 import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
-import icon from '../../assets/icon.svg';
+import {
+  NextUIProvider,
+  Table,
+  TableHeader,
+  TableColumn,
+  TableBody,
+  TableRow,
+  TableCell,
+} from '@nextui-org/react';
 import './App.css';
 
 function Hello() {
   return (
-    <div>
-      <div className="Hello">
-        <img width="200" alt="icon" src={icon} />
-      </div>
-      <h1>electron-react-boilerplate</h1>
-      <div className="Hello">
-        <a
-          href="https://electron-react-boilerplate.js.org/"
-          target="_blank"
-          rel="noreferrer"
-        >
-          <button type="button">
-            <span role="img" aria-label="books">
-              📚
-            </span>
-            Read our docs
-          </button>
-        </a>
-        <a
-          href="https://github.com/sponsors/electron-react-boilerplate"
-          target="_blank"
-          rel="noreferrer"
-        >
-          <button type="button">
-            <span role="img" aria-label="folded hands">
-              🙏
-            </span>
-            Donate
-          </button>
-        </a>
-      </div>
-    </div>
+    <Table aria-label="Example static collection table">
+      <TableHeader>
+        <TableColumn>NAME</TableColumn>
+        <TableColumn>ROLE</TableColumn>
+        <TableColumn>STATUS</TableColumn>
+      </TableHeader>
+      <TableBody>
+        <TableRow key="1">
+          <TableCell>Tony Reichert</TableCell>
+          <TableCell>CEO</TableCell>
+          <TableCell>Active</TableCell>
+        </TableRow>
+        <TableRow key="2">
+          <TableCell>Zoey Lang</TableCell>
+          <TableCell>Technical Lead</TableCell>
+          <TableCell>Paused</TableCell>
+        </TableRow>
+        <TableRow key="3">
+          <TableCell>Jane Fisher</TableCell>
+          <TableCell>Senior Developer</TableCell>
+          <TableCell>Active</TableCell>
+        </TableRow>
+        <TableRow key="4">
+          <TableCell>William Howard</TableCell>
+          <TableCell>Community Manager</TableCell>
+          <TableCell>Vacation</TableCell>
+        </TableRow>
+      </TableBody>
+    </Table>
   );
 }
 
 export default function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<Hello />} />
-      </Routes>
-    </Router>
+    <NextUIProvider>
+      <Router>
+        <Routes>
+          <Route path="/" element={<Hello />} />
+        </Routes>
+      </Router>
+    </NextUIProvider>
   );
 }
