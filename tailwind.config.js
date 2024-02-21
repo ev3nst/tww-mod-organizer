@@ -1,4 +1,4 @@
-// tailwind.config.js
+/* eslint-disable */
 const { nextui } = require('@nextui-org/react');
 
 /** @type {import('tailwindcss').Config} */

@@ -1,5 +1,5 @@
-import { settings } from 'config';
-import { setItemToStore } from 'helpers/utils';
+import { settings } from '../config';
+import { setItemToStore } from '../helpers/utils';
 
 export default (state, action) => {
     const { type, payload } = action;

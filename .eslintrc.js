@@ -1,8 +1,20 @@
 /* eslint-env node */
 module.exports = {
     env: {
+        node: true,
         browser: true,
         es2021: true,
+    },
+    settings: {
+        react: {
+            version: 'detect',
+        },
+        'import/resolver': {
+            node: {
+                paths: ['./src'],
+                extensions: ['.js', '.jsx', '.zip'],
+            },
+        },
     },
     extends: [
         'eslint:recommended',
@@ -12,50 +24,23 @@ module.exports = {
         'plugin:import/recommended',
         'plugin:prettier/recommended',
     ],
-    plugins: [
-        '@typescript-eslint',
-        'jsx-a11y',
-        'react',
-        'react-hooks',
-        'import',
-        'prettier',
-    ],
-    rules: {
-        // A temporary hack related to IDE not resolving correct package.json
-        'import/no-extraneous-dependencies': 'off',
-        'react/react-in-jsx-scope': 'off',
-        'react/jsx-filename-extension': 'off',
-        'import/extensions': 'off',
-        'import/no-unresolved': 'off',
-        'import/no-import-module-exports': 'off',
-        'no-shadow': 'off',
-        '@typescript-eslint/no-shadow': 'error',
-        'no-unused-vars': 'off',
-        '@typescript-eslint/no-unused-vars': 'error',
-        'no-empty': ['error', { allowEmptyCatch: true }],
-        'prettier/prettier': ['error', { endOfLine: 'auto' }],
-    },
     parserOptions: {
-        ecmaVersion: 2022,
+        ecmaFeatures: {
+            jsx: true,
+        },
+        ecmaVersion: 'latest',
         sourceType: 'module',
     },
-    settings: {
-        react: {
-            version: 'detect',
-        },
-        'import/resolver': {
-            // See https://github.com/benmosher/eslint-plugin-import/issues/1396#issuecomment-575727774 for line below
-            node: {},
-            webpack: {
-                config: require.resolve(
-                    './.erb/configs/webpack.config.eslint.ts',
-                ),
-            },
-            typescript: {},
-        },
-        'import/parsers': {
-            '@typescript-eslint/parser': ['.ts', '.tsx'],
-        },
+    plugins: ['jsx-a11y', 'react', 'react-hooks', 'import', 'prettier'],
+    rules: {
+        'react/react-in-jsx-scope': 'off',
+        'react/no-unescaped-entities': 'off',
+        'react/prop-types': 'off',
+        'react/display-name': 'off',
+        'prettier/prettier': ['error', { endOfLine: 'auto' }],
+        'jsx-a11y/alt-text': 'off',
+        'no-empty': ['error', { allowEmptyCatch: true }],
+        'import/no-named-as-default': 'off',
     },
     globals: {
         process: true,
