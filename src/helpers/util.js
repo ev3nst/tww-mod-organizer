@@ -3,22 +3,6 @@ import duration from 'dayjs/plugin/duration';
 dayjs.extend(duration);
 
 //===============================
-// Local Storage
-//===============================
-export const getItemFromStore = (key, defaultValue, store = localStorage) => {
-    try {
-        return store.getItem(key) === null
-            ? defaultValue
-            : JSON.parse(store.getItem(key));
-    } catch {
-        return store.getItem(key) || defaultValue;
-    }
-};
-
-export const setItemToStore = (key, payload, store = localStorage) =>
-    store.setItem(key, payload);
-
-//===============================
 // String & Number manipulation
 //===============================
 export const numberFormatter = (number, fixed = 2) => {
@@ -70,3 +54,27 @@ export const getSize = (size) => {
         return `${(size / (1024 * 1024)).toFixed(2)} MB`;
     }
 };
+
+//===============================
+// Other
+//===============================
+export function mergeObjects(obj1, obj2) {
+    let mergedObject = {};
+    for (const key in obj1) {
+        if (mergedObject[key] === undefined || mergedObject[key] === null)
+            mergedObject[key] = obj1[key];
+    }
+    for (const key in obj2) {
+        if (mergedObject[key] === undefined || mergedObject[key] === null)
+            mergedObject[key] = obj2[key];
+    }
+    return mergedObject;
+}
+
+export function debounceEffect(effect, debounceMs) {
+    let timer;
+    return (arg, r) => {
+        clearTimeout(timer);
+        timer = setTimeout(() => effect(arg, r), debounceMs);
+    };
+}

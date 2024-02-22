@@ -7,11 +7,23 @@
  * `./src/main.js` using webpack. This gives us some performance wins.
  */
 import path from 'path';
-import { app, BrowserWindow, shell, ipcMain } from 'electron';
+import { app, BrowserWindow, shell, ipcMain, remote } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
+
 import MenuBuilder from './menu';
-import { resolveHtmlPath } from './util';
+import db from './db';
+import { resolveSteamPaths, resolveSaveFiles } from './steam';
+
+function resolveHtmlPath(htmlFileName) {
+    if (process.env.NODE_ENV === 'development') {
+        const port = process.env.PORT || 1212;
+        const url = new URL(`http://localhost:${port}`);
+        url.pathname = htmlFileName;
+        return url.href;
+    }
+    return `file://${path.resolve(__dirname, '../renderer/', htmlFileName)}`;
+}
 
 class AppUpdater {
     constructor() {
@@ -22,12 +34,6 @@ class AppUpdater {
 }
 
 let mainWindow = null;
-
-ipcMain.on('ipc-example', async (event, arg) => {
-    const msgTemplate = (pingPong) => `IPC test: ${pingPong}`;
-    console.log(msgTemplate(arg));
-    event.reply('ipc-example', msgTemplate('pong'));
-});
 
 if (process.env.NODE_ENV === 'production') {
     const sourceMapSupport = require('source-map-support');
@@ -54,8 +60,12 @@ const createWindow = () => {
         show: false,
         width: 1024,
         height: 728,
+        minWidth: 1024,
+        minHeight: 728,
+        autoHideMenuBar: true,
         icon: getAssetPath('icon.png'),
         webPreferences: {
+            sandbox: false,
             preload: app.isPackaged
                 ? path.join(__dirname, 'preload.js')
                 : path.join(__dirname, '../../.erb/dll/preload.js'),
@@ -96,7 +106,6 @@ const createWindow = () => {
 /**
  * Add event listeners...
  */
-
 app.on('window-all-closed', () => {
     // Respect the OSX convention of having the application in memory even
     // after all windows have been closed
@@ -105,13 +114,40 @@ app.on('window-all-closed', () => {
     }
 });
 
-app.whenReady()
-    .then(() => {
-        createWindow();
-        app.on('activate', () => {
-            // On macOS it's common to re-create a window in the app when the
-            // dock icon is clicked and there are no other windows open.
-            if (mainWindow === null) createWindow();
-        });
-    })
-    .catch(console.log);
+app.on('ready', function () {
+    ipcMain.handle('path:dirname', (_e, pathString) => {
+        return path.dirname(pathString);
+    });
+
+    ipcMain.handle('path:join', (_e, ...args) => {
+        return path.join(args);
+    });
+
+    ipcMain.handle('electron:appData', () => {
+        return app.getPath('appData');
+    });
+
+    ipcMain.handle('electron:exit', () => {
+        remote.getCurrentWindow().close();
+    });
+
+    ipcMain.handle('db:get', (_e, key) => {
+        return db.get(key);
+    });
+
+    ipcMain.handle('db:set', (_e, args) => {
+        return db.set(args[0], args[1]);
+    });
+
+    createWindow();
+
+    // Steam related
+    resolveSteamPaths();
+    resolveSaveFiles();
+
+    app.on('activate', () => {
+        // On macOS it's common to re-create a window in the app when the
+        // dock icon is clicked and there are no other windows open.
+        if (mainWindow === null) createWindow();
+    });
+});

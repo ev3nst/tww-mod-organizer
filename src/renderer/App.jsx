@@ -1,57 +1,24 @@
-import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
-import {
-    NextUIProvider,
-    Table,
-    TableHeader,
-    TableColumn,
-    TableBody,
-    TableRow,
-    TableCell,
-} from '@nextui-org/react';
+import { HashRouter as Router, Route, Routes } from 'react-router-dom';
+import { NextUIProvider } from '@nextui-org/react';
+import { ThemeProvider as NextThemesProvider } from 'next-themes';
+import { observer } from 'mobx-react';
+import Startup from './Startup';
+import OrganizerIndex from './OrganizerIndex';
 import './App.css';
 
-function Hello() {
-    return (
-        <Table aria-label="Example static collection table">
-            <TableHeader>
-                <TableColumn>NAME</TableColumn>
-                <TableColumn>ROLE</TableColumn>
-                <TableColumn>STATUS</TableColumn>
-            </TableHeader>
-            <TableBody>
-                <TableRow key="1">
-                    <TableCell>Tony Reichert</TableCell>
-                    <TableCell>CEO</TableCell>
-                    <TableCell>Active</TableCell>
-                </TableRow>
-                <TableRow key="2">
-                    <TableCell>Zoey Lang</TableCell>
-                    <TableCell>Technical Lead</TableCell>
-                    <TableCell>Paused</TableCell>
-                </TableRow>
-                <TableRow key="3">
-                    <TableCell>Jane Fisher</TableCell>
-                    <TableCell>Senior Developer</TableCell>
-                    <TableCell>Active</TableCell>
-                </TableRow>
-                <TableRow key="4">
-                    <TableCell>William Howard</TableCell>
-                    <TableCell>Community Manager</TableCell>
-                    <TableCell>Vacation</TableCell>
-                </TableRow>
-            </TableBody>
-        </Table>
-    );
-}
-
-export default function App() {
+function App() {
     return (
         <NextUIProvider>
-            <Router>
-                <Routes>
-                    <Route path="/" element={<Hello />} />
-                </Routes>
-            </Router>
+            <NextThemesProvider attribute="class" defaultTheme="dark">
+                <Router>
+                    <Routes>
+                        <Route index path="/" element={<Startup />} />
+                        <Route path="/organizer" element={<OrganizerIndex />} />
+                    </Routes>
+                </Router>
+            </NextThemesProvider>
         </NextUIProvider>
     );
 }
+
+export default observer(App);
