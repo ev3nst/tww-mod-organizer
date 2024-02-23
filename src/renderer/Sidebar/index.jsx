@@ -1,6 +1,7 @@
 import { Tabs, Tab, Card, CardBody, Button } from '@nextui-org/react';
 import { FolderOpenIcon, CloudArrowDownIcon } from '@heroicons/react/24/solid';
 import SaveGames from './SaveGames';
+import Downloads from './Downloads';
 
 function Sidebar() {
     return (
@@ -35,11 +36,7 @@ function Sidebar() {
                     >
                         <Card>
                             <CardBody>
-                                Ut enim ad minim veniam, quis nostrud
-                                exercitation ullamco laboris nisi ut aliquip ex
-                                ea commodo consequat. Duis aute irure dolor in
-                                reprehenderit in voluptate velit esse cillum
-                                dolore eu fugiat nulla pariatur.
+                                <Downloads />
                             </CardBody>
                         </Card>
                     </Tab>

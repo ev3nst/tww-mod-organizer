@@ -2,6 +2,7 @@ import { app, dialog, ipcMain, remote, shell } from 'electron';
 import path from 'path';
 import fs from 'fs';
 import { readdir } from 'fs/promises';
+import { sync as mkdripSync } from 'mkdirp';
 import { ulid } from 'ulid';
 import db from './db';
 import dbKeys from './dbKeys';
@@ -19,7 +20,7 @@ BigInt.prototype.toJSON = function () {
 function getModInstallationPath() {
     let modInstallationPath = db.get(dbKeys.MOD_INSTALLATION_FOLDER);
     if (!modInstallationPath) {
-        modInstallationPath = `${app.getPath('userData')}\\mods`;
+        modInstallationPath = path.join(app.getPath('userData'), 'mods');
         db.set(dbKeys.MOD_INSTALLATION_FOLDER, modInstallationPath);
     }
 
@@ -67,6 +68,56 @@ function ipcHandlers() {
         return fs.existsSync(pathString);
     });
 
+    ipcMain.handle('game:downloadedFiles', (managedGameFallback) => {
+        let downloadFiles = [];
+        let managedGame = db.get(dbKeys.MANAGED_GAME);
+        if (!managedGame) {
+            managedGame = managedGameFallback;
+        }
+
+        let modDownloadPaths = db.get(dbKeys.MOD_DOWNLOAD_FOLDER);
+        let modDownloadPath;
+        if (
+            typeof modDownloadPaths === 'undefined' ||
+            typeof modDownloadPaths[managedGame] === 'undefined'
+        ) {
+            modDownloadPath = path.join(
+                app.getPath('userData'),
+                'downloads',
+                managedGame,
+            );
+            db.set(dbKeys.MOD_DOWNLOAD_FOLDER, {
+                ...modDownloadPaths,
+                [managedGame]: modDownloadPath,
+            });
+        } else {
+            modDownloadPath = modDownloadPaths[managedGame];
+        }
+
+        if (!fs.existsSync(modDownloadPath)) {
+            mkdripSync(modDownloadPath);
+            return [];
+        }
+
+        const files = fs.readdirSync(modDownloadPath);
+        for (let fi = 0; fi < files.length; fi++) {
+            const filePath = path.join(modDownloadPath, files[fi]);
+            if (
+                filePath.endsWith('.zip') ||
+                filePath.endsWith('.7z') ||
+                filePath.endsWith('.rar')
+            ) {
+                const stat = fs.lstatSync(filePath);
+                downloadFiles.push({
+                    name: files[fi],
+                    size: stat.size,
+                    date: stat.mtime,
+                    path: filePath,
+                });
+            }
+        }
+    });
+
     ipcMain.handle('game:saveFiles', (managedGameFallback) => {
         let managedGame = db.get(dbKeys.MANAGED_GAME);
         if (!managedGame) {
@@ -82,7 +133,7 @@ function ipcHandlers() {
         if (typeof saveGamePaths[managedGame] !== 'undefined') {
             const saveGamePath = saveGamePaths[managedGame];
             if (!fs.existsSync(saveGamePath)) {
-                return;
+                return [];
             }
 
             const files = fs.readdirSync(saveGamePath);
@@ -113,7 +164,7 @@ function ipcHandlers() {
             }
 
             await shell.trashItem(
-                `${saveGamePaths[managedGame]}\\${saveFilePath}`,
+                path.join(saveGamePaths[managedGame], saveFilePath),
             );
         }
     });
@@ -124,7 +175,7 @@ function ipcHandlers() {
 
     ipcMain.handle('game:checkExistingMod', (_e, modName) => {
         const modInstallationFolder = getModInstallationPath();
-        const modInstallationPath = `${modInstallationFolder}\\${modName}`;
+        const modInstallationPath = path.join(modInstallationFolder, modName);
         return fs.existsSync(modInstallationPath);
     });
 
@@ -132,7 +183,10 @@ function ipcHandlers() {
         'game:installMod',
         async (_e, modName, zipPath, sameNameAction) => {
             const modInstallationFolder = getModInstallationPath();
-            const modInstallationPath = `${modInstallationFolder}\\${modName}`;
+            const modInstallationPath = path.join(
+                modInstallationFolder,
+                modName,
+            );
             try {
                 if (!fs.existsSync(modInstallationPath)) {
                     fs.mkdirSync(modInstallationPath);
@@ -145,7 +199,7 @@ function ipcHandlers() {
                     for (let efi = 0; efi < existingFiles.length; efi++) {
                         const existingFilePath = existingFiles[efi];
                         await shell.trashItem(
-                            `${modInstallationPath}\\${existingFilePath}`,
+                            path.join(modInstallationPath, existingFilePath),
                         );
                     }
                 }
@@ -166,8 +220,9 @@ function ipcHandlers() {
                 title: modName,
                 version: '1.0',
             };
+
             fs.writeFileSync(
-                `${modInstallationPath}\\tww-mod-organizer.meta`,
+                path.join(modInstallationPath, 'tww-mod-organizer.meta'),
                 JSON.stringify(blankNewMeta),
             );
 
@@ -187,7 +242,11 @@ function ipcHandlers() {
 
         for (let di = 0; di < directories.length; di++) {
             const dir = directories[di];
-            const metaDataPath = `${modInstallationFolder}\\${dir}\\tww-mod-organizer.meta`;
+            const metaDataPath = path.join(
+                modInstallationFolder,
+                dir,
+                'tww-mod-organizer.meta',
+            );
             const blankNewMeta = {
                 id: ulid(),
                 title: dir,
@@ -223,7 +282,7 @@ function ipcHandlers() {
 
     ipcMain.handle('game:deleteMod', async (_e, title) => {
         const modInstallationFolder = getModInstallationPath();
-        const modPath = `${modInstallationFolder}\\${title}`;
+        const modPath = path.join(modInstallationFolder, title);
         if (fs.existsSync(modPath)) {
             await shell.trashItem(modPath);
         }

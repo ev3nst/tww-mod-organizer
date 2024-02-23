@@ -9,6 +9,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
     steamUnsubscribe: (arg) =>
         ipcRenderer.invoke('steam:steamUnsubscribe', arg),
     deleteMod: (arg) => ipcRenderer.invoke('game:deleteMod', arg),
+    getDownloadedArchives: (arg) =>
+        ipcRenderer.invoke('game:downloadedFiles', arg),
+
     dbGet: (arg) => ipcRenderer.invoke('db:get', arg),
     dbSet: (...arg) => ipcRenderer.invoke('db:set', ...arg),
     pathDirname: (arg) => ipcRenderer.invoke('path:dirname', arg),

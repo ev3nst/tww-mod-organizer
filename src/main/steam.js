@@ -55,7 +55,11 @@ export function resolveSteamPaths() {
 }
 
 export function resolveSteamLibraryPaths(steamInstallPath) {
-    const libraryMetaFile = `${steamInstallPath}\\steamapps\\libraryfolders.vdf`;
+    const libraryMetaFile = path.join(
+        steamInstallPath,
+        'steamapps',
+        'libraryfolders.vdf',
+    );
     if (!fs.existsSync(libraryMetaFile)) {
         return;
     }
@@ -79,8 +83,16 @@ export function resolveSteamLibraryPaths(steamInstallPath) {
         gameInstallPaths[sg.slug] = '';
         for (let lfpi = 0; lfpi < libraryFolderPaths.length; lfpi++) {
             const libPath = libraryFolderPaths[lfpi];
-            const gameInstallPath = `${libPath}\\steamapps\\common\\${sg.steamFolderName}`;
-            if (fs.existsSync(`${gameInstallPath}\\${sg.exeName}.exe`)) {
+            const gameInstallPath = path.join(
+                libPath,
+                'steamapps',
+                'common',
+                sg.steamFolderName,
+            );
+
+            if (
+                fs.existsSync(path.join(gameInstallPath, `${sg.exeName}.exe`))
+            ) {
                 gameInstallPaths[sg.slug] = gameInstallPath;
                 break;
             }
@@ -95,8 +107,13 @@ export function resolveSaveGamePaths() {
     let saveGamePaths = {};
     for (let sgi = 0; sgi < supportedGames.length; sgi++) {
         const sg = supportedGames[sgi];
-        saveGamePaths[sg.slug] =
-            `${appDataPath}\\The Creative Assembly\\${sg.savePathFolder}\\save_games`;
+
+        saveGamePaths[sg.slug] = path.join(
+            appDataPath,
+            'The Creative Assembly',
+            sg.savePathFolder,
+            'save_games',
+        );
     }
 
     db.set(dbKeys.SAVE_GAME_PATHS, saveGamePaths);
