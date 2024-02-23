@@ -176,6 +176,9 @@ const Header = () => {
                             key="autoscaling"
                             description="Nexus related features such as endorsing, version checking and downloading directly with the app."
                             startContent={icons.scale}
+                            onClick={async () => {
+                                await window.electronAPI.nexusInitAuth();
+                            }}
                         >
                             Login
                         </DropdownItem>

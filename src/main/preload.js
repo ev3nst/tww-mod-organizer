@@ -1,6 +1,7 @@
 import { contextBridge, ipcRenderer } from 'electron';
 
 contextBridge.exposeInMainWorld('electronAPI', {
+    nexusInitAuth: () => ipcRenderer.invoke('nexus:init_auth'),
     checkExistingMod: (arg) => ipcRenderer.invoke('game:checkExistingMod', arg),
     installMod: (...arg) => ipcRenderer.invoke('game:installMod', ...arg),
     getModFiles: () => ipcRenderer.invoke('game:modFiles'),

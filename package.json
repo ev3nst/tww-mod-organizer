@@ -73,7 +73,8 @@
         "react-hot-toast": "^2.4.1",
         "steamworks.js": "^0.3.1",
         "ulid": "^2.3.0",
-        "winreg": "^1.2.5"
+        "winreg": "^1.2.5",
+        "ws": "^8.16.0"
     },
     "devDependencies": {
         "@electron/notarize": "^2.1.0",
@@ -140,7 +141,7 @@
     },
     "build": {
         "productName": "TWWModOrganizer",
-        "appId": "org.erb.TWWModOrganizer",
+        "appId": "org.TWWModOrganizer",
         "asar": true,
         "asarUnpack": "**\\*.{node,dll}",
         "files": [
