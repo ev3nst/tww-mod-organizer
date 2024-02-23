@@ -1,3 +1,61 @@
+export const PlusIcon = ({ size = 24, width, height, ...props }) => (
+    <svg
+        aria-hidden="true"
+        fill="none"
+        focusable="false"
+        height={size || height}
+        role="presentation"
+        viewBox="0 0 24 24"
+        width={size || width}
+        {...props}
+    >
+        <g
+            fill="none"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={1.5}
+        >
+            <path d="M6 12h12" />
+            <path d="M12 18V6" />
+        </g>
+    </svg>
+);
+
+export const Search = ({
+    size = 24,
+    strokeWidth = 1.5,
+    width,
+    height,
+    ...props
+}) => (
+    <svg
+        aria-hidden="true"
+        fill="none"
+        focusable="false"
+        height={height || size}
+        role="presentation"
+        viewBox="0 0 24 24"
+        width={width || size}
+        {...props}
+    >
+        <path
+            d="M11.5 21C16.7467 21 21 16.7467 21 11.5C21 6.25329 16.7467 2 11.5 2C6.25329 2 2 6.25329 2 11.5C2 16.7467 6.25329 21 11.5 21Z"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={strokeWidth}
+        />
+        <path
+            d="M22 22L20 20"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={strokeWidth}
+        />
+    </svg>
+);
+
 export const ChevronDown = ({ fill, size, height, width, ...props }) => {
     return (
         <svg
@@ -20,52 +78,23 @@ export const ChevronDown = ({ fill, size, height, width, ...props }) => {
     );
 };
 
-export const Lock = ({ fill, size, height, width, ...props }) => {
-    const color = fill;
-
-    return (
-        <svg
-            height={size || height || 24}
-            viewBox="0 0 24 24"
-            width={size || width || 24}
-            xmlns="http://www.w3.org/2000/svg"
-            {...props}
-        >
-            <g transform="translate(3.5 2)">
-                <path
-                    d="M9.121,6.653V4.5A4.561,4.561,0,0,0,0,4.484V6.653"
-                    fill="none"
-                    stroke={color}
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeMiterlimit="10"
-                    strokeWidth={1.5}
-                    transform="translate(3.85 0.75)"
-                />
-                <path
-                    d="M.5,0V2.221"
-                    fill="none"
-                    stroke={color}
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeMiterlimit="10"
-                    strokeWidth={1.5}
-                    transform="translate(7.91 12.156)"
-                />
-                <path
-                    d="M7.66,0C1.915,0,0,1.568,0,6.271s1.915,6.272,7.66,6.272,7.661-1.568,7.661-6.272S13.4,0,7.66,0Z"
-                    fill="none"
-                    stroke={color}
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeMiterlimit="10"
-                    strokeWidth={1.5}
-                    transform="translate(0.75 6.824)"
-                />
-            </g>
-        </svg>
-    );
-};
+export const VerticalDotsIcon = ({ size = 24, width, height, ...props }) => (
+    <svg
+        aria-hidden="true"
+        fill="none"
+        focusable="false"
+        height={size || height}
+        role="presentation"
+        viewBox="0 0 24 24"
+        width={size || width}
+        {...props}
+    >
+        <path
+            d="M12 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0-6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 12c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+            fill="currentColor"
+        />
+    </svg>
+);
 
 export const Activity = ({ fill, size, height, width, ...props }) => {
     return (
@@ -146,7 +175,6 @@ export const Server = ({
         </svg>
     );
 };
-
 export const TagUser = ({
     fill = 'currentColor',
     size,
@@ -215,37 +243,3 @@ export const Scale = ({
         </svg>
     );
 };
-
-export const Search = ({
-    size = 24,
-    strokeWidth = 1.5,
-    width,
-    height,
-    ...props
-}) => (
-    <svg
-        aria-hidden="true"
-        fill="none"
-        focusable="false"
-        height={height || size}
-        role="presentation"
-        viewBox="0 0 24 24"
-        width={width || size}
-        {...props}
-    >
-        <path
-            d="M11.5 21C16.7467 21 21 16.7467 21 11.5C21 6.25329 16.7467 2 11.5 2C6.25329 2 2 6.25329 2 11.5C2 16.7467 6.25329 21 11.5 21Z"
-            stroke="currentColor"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={strokeWidth}
-        />
-        <path
-            d="M22 22L20 20"
-            stroke="currentColor"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={strokeWidth}
-        />
-    </svg>
-);

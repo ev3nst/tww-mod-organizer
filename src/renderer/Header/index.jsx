@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useState, useRef } from 'react';
 import {
     Navbar,
     NavbarContent,
@@ -10,9 +10,16 @@ import {
     DropdownMenu,
     Avatar,
     Button,
+    Modal,
+    ModalContent,
+    ModalHeader,
+    ModalBody,
+    ModalFooter,
+    RadioGroup,
+    Radio,
 } from '@nextui-org/react';
 import { observer } from 'mobx-react';
-import { runInAction } from 'mobx';
+import { runInAction, toJS } from 'mobx';
 import {
     ArrowPathIcon,
     Cog6ToothIcon,
@@ -20,6 +27,7 @@ import {
 } from '@heroicons/react/24/solid';
 
 import settings from '../../store/settings';
+import modFiles from '../../store/modFiles';
 import {
     ChevronDown,
     Activity,
@@ -28,10 +36,21 @@ import {
     TagUser,
     Scale,
     Search,
-} from './Icons.jsx';
+} from '../Icons';
 import { supportedGames } from '../../store/constants.js';
 
 const Header = () => {
+    const [installModConfirm, setInstallModConfirm] = useState({
+        modInputKey: 0,
+        isModalOpen: false,
+        zipPath: '',
+        defaultModName: '',
+        showSameNameModInputs: false,
+        sameNameAction: null,
+    });
+    const [installModName, setInstallModName] = useState('');
+
+    const installModRef = useRef(null);
     const gameRefs = useRef({});
     const currentGameDetails = supportedGames.find((obj) => {
         return obj.slug === settings.managedGame;
@@ -179,10 +198,33 @@ const Header = () => {
 
                 <NavbarContent className="hidden sm:flex">
                     <NavbarItem>
-                        <Button color="foreground">
+                        <Button
+                            color="foreground"
+                            onClick={() => {
+                                installModRef.current.click();
+                            }}
+                        >
                             <ArchiveBoxIcon className="h-5 w-5" />
                             Install Mod
                         </Button>
+                        <input
+                            key={installModConfirm.modInputKey}
+                            className="hidden"
+                            ref={(ref) => (installModRef.current = ref)}
+                            type="file"
+                            accept=".7z,.rar,.zip"
+                            onChange={(event) => {
+                                const zipPath = event.target.files[0].path;
+                                setInstallModConfirm({
+                                    ...installModConfirm,
+                                    isModalOpen: true,
+                                    zipPath: zipPath,
+                                    defaultModName: zipPath
+                                        .substring(0, zipPath.lastIndexOf('.'))
+                                        .replace(/^.*[\\/]/, ''),
+                                });
+                            }}
+                        />
                     </NavbarItem>
                     <NavbarItem>
                         <Button color="foreground">
@@ -200,7 +242,9 @@ const Header = () => {
             </NavbarContent>
 
             <NavbarContent as="div" className="items-center" justify="end">
-                <Button color="foreground">Mod Count: 64</Button>
+                <Button color="foreground">
+                    Mod Count: {modFiles.files.length}
+                </Button>
                 <Input
                     classNames={{
                         base: 'max-w-full sm:max-w-[20rem] h-10 mr-5',
@@ -224,6 +268,136 @@ const Header = () => {
                     src="https://i.pravatar.cc/150?u=a042581f4e29026704d"
                 />
             </NavbarContent>
+            <Modal isOpen={installModConfirm.isModalOpen}>
+                <ModalContent>
+                    {() => (
+                        <>
+                            <ModalHeader className="flex flex-col gap-1">
+                                Install Mod
+                            </ModalHeader>
+                            <ModalBody>
+                                <Input
+                                    // eslint-disable-next-line jsx-a11y/no-autofocus
+                                    autoFocus
+                                    label="Name"
+                                    placeholder="Provide name for this mod"
+                                    required
+                                    variant="bordered"
+                                    defaultValue={
+                                        installModConfirm.defaultModName
+                                    }
+                                    onChange={(event) => {
+                                        setInstallModName(event.target.value);
+                                    }}
+                                />
+
+                                {installModConfirm.showSameNameModInputs ===
+                                    true && (
+                                    <RadioGroup
+                                        label="Mod with same name exists. You can either select the options below or write a different name."
+                                        color="warning"
+                                        onChange={(event) => {
+                                            setInstallModConfirm({
+                                                ...installModConfirm,
+                                                sameNameAction:
+                                                    event.target.value,
+                                            });
+                                        }}
+                                    >
+                                        <Radio
+                                            value="replace"
+                                            description="Replace the contents of the mod with the new archive."
+                                        >
+                                            Replace
+                                        </Radio>
+                                        <Radio
+                                            value="merge"
+                                            description="Merges the contents of the archive with the existing ones."
+                                        >
+                                            Merge
+                                        </Radio>
+                                    </RadioGroup>
+                                )}
+                            </ModalBody>
+                            <ModalFooter>
+                                <Button
+                                    color="primary"
+                                    onPress={async () => {
+                                        const checkExistingMod =
+                                            await window.electronAPI.checkExistingMod(
+                                                installModName,
+                                            );
+
+                                        if (
+                                            checkExistingMod &&
+                                            installModConfirm.sameNameAction ===
+                                                null
+                                        ) {
+                                            setInstallModConfirm({
+                                                ...installModConfirm,
+                                                showSameNameModInputs: true,
+                                            });
+                                            return;
+                                        }
+
+                                        const newModMeta =
+                                            await window.electronAPI.installMod(
+                                                installModName,
+                                                installModConfirm.zipPath,
+                                                installModConfirm.sameNameAction,
+                                            );
+
+                                        const modFilesData = toJS(
+                                            modFiles.files,
+                                        );
+                                        if (
+                                            modFilesData.filter(
+                                                (mfd) =>
+                                                    mfd.title ===
+                                                    installModName,
+                                            ).length === 0
+                                        ) {
+                                            const newModFiles = [
+                                                ...modFilesData,
+                                                newModMeta,
+                                            ];
+                                            runInAction(() => {
+                                                modFiles.files = newModFiles;
+                                            });
+                                        }
+
+                                        setInstallModConfirm({
+                                            modInputKey: Date.now(),
+                                            isModalOpen: false,
+                                            zipPath: '',
+                                            defaultModName: '',
+                                            showSameNameModInputs: false,
+                                            sameNameAction: null,
+                                        });
+                                    }}
+                                >
+                                    Install
+                                </Button>
+                                <Button
+                                    color="primary"
+                                    onPress={() => {
+                                        setInstallModConfirm({
+                                            modInputKey: Date.now(),
+                                            isModalOpen: false,
+                                            zipPath: '',
+                                            defaultModName: '',
+                                            showSameNameModInputs: false,
+                                            sameNameAction: null,
+                                        });
+                                    }}
+                                >
+                                    Cancel
+                                </Button>
+                            </ModalFooter>
+                        </>
+                    )}
+                </ModalContent>
+            </Modal>
         </Navbar>
     );
 };

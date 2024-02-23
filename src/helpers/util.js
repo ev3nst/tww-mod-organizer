@@ -1,7 +1,3 @@
-import dayjs from 'dayjs';
-import duration from 'dayjs/plugin/duration';
-dayjs.extend(duration);
-
 //===============================
 // String & Number manipulation
 //===============================
@@ -78,3 +74,23 @@ export function debounceEffect(effect, debounceMs) {
         timer = setTimeout(() => effect(arg, r), debounceMs);
     };
 }
+
+export function readableFileSize(size) {
+    var i = size == 0 ? 0 : Math.floor(Math.log(size) / Math.log(1024));
+    return (
+        (size / Math.pow(1024, i)).toFixed(2) * 1 +
+        ' ' +
+        ['B', 'kB', 'MB', 'GB', 'TB'][i]
+    );
+}
+
+// Return the date with depend of Local Time Zone
+Date.prototype.formattedDate = function () {
+    return this.toLocaleDateString('tr-TR', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: 'numeric',
+        minute: 'numeric',
+    });
+};

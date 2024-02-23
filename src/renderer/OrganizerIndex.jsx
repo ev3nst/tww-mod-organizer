@@ -1,6 +1,5 @@
-import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { observer } from 'mobx-react';
+import { Card, CardBody } from '@nextui-org/react';
 
 import Header from './Header';
 import settings from '../store/settings';
@@ -11,37 +10,25 @@ import Sidebar from './Sidebar';
 import ModList from './ModList';
 
 const OrganizerIndex = () => {
-    const navigate = useNavigate();
-
-    useEffect(() => {
-        if (String(settings.managedGame).length === 0) {
-            navigate('/');
-        }
-    }, [navigate]);
-
     if (String(settings.managedGame).length !== 0) {
         return (
             <>
-                <main>
+                <main className="w-full h-full relative">
                     <div
+                        className="absolute left-0 right-0 bottom-0 top-0 opacity-20 bg-cover z-0"
                         style={{
-                            position: 'absolute',
-                            left: 0,
-                            right: 0,
-                            bottom: 0,
-                            top: 0,
-                            opacity: 0.2,
                             backgroundImage: `url(${settings.managedGame === 'tww3' ? TWW3BG : TWW2BG})`,
-                            backgroundSize: 'cover',
-                            zIndex: -1,
                         }}
                     />
                     <Header />
-                    <div className="flex gap-4 mt-10">
-                        <div className="w-8/12	">
-                            <ModList />
-                        </div>
-                        <div className="w-4/12	">
+                    <div className="fixed top-[100px] left-0 right-0 bottom-0 flex gap-4 px-10 mb-10">
+                        <Card className="w-8/12 bg-zinc-950/90 mr-5">
+                            <CardBody>
+                                <ModList />
+                            </CardBody>
+                        </Card>
+
+                        <div className="w-4/12 flex flex-col justify-between">
                             <Sidebar />
                         </div>
                     </div>

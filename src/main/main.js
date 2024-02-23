@@ -7,13 +7,12 @@
  * `./src/main.js` using webpack. This gives us some performance wins.
  */
 import path from 'path';
-import { app, BrowserWindow, shell, ipcMain, remote } from 'electron';
+import { app, BrowserWindow, shell } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
-
 import MenuBuilder from './menu';
-import db from './db';
-import { resolveSteamPaths, resolveSaveFiles } from './steam';
+import { resolveSteamPaths } from './steam';
+import ipcHandlers from './ipcHandlers';
 
 function resolveHtmlPath(htmlFileName) {
     if (process.env.NODE_ENV === 'development') {
@@ -65,7 +64,6 @@ const createWindow = () => {
         autoHideMenuBar: true,
         icon: getAssetPath('icon.png'),
         webPreferences: {
-            sandbox: false,
             preload: app.isPackaged
                 ? path.join(__dirname, 'preload.js')
                 : path.join(__dirname, '../../.erb/dll/preload.js'),
@@ -115,39 +113,8 @@ app.on('window-all-closed', () => {
 });
 
 app.on('ready', function () {
-    ipcMain.handle('path:dirname', (_e, pathString) => {
-        return path.dirname(pathString);
-    });
-
-    ipcMain.handle('path:join', (_e, ...args) => {
-        return path.join(args);
-    });
-
-    ipcMain.handle('electron:appData', () => {
-        return app.getPath('appData');
-    });
-
-    ipcMain.handle('electron:exit', () => {
-        remote.getCurrentWindow().close();
-    });
-
-    ipcMain.handle('db:get', (_e, key) => {
-        return db.get(key);
-    });
-
-    ipcMain.handle('db:set', (_e, args) => {
-        return db.set(args[0], args[1]);
-    });
-
-    createWindow();
-
     // Steam related
     resolveSteamPaths();
-    resolveSaveFiles();
-
-    app.on('activate', () => {
-        // On macOS it's common to re-create a window in the app when the
-        // dock icon is clicked and there are no other windows open.
-        if (mainWindow === null) createWindow();
-    });
+    ipcHandlers();
+    createWindow();
 });

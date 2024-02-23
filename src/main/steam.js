@@ -2,8 +2,10 @@ import { app } from 'electron';
 import winreg from 'winreg';
 import fs from 'fs';
 import path from 'path';
+import steamworks from 'steamworks.js';
 
 import db from './db';
+import dbKeys from './dbKeys';
 import { supportedGames } from '../store/constants';
 
 export function resolveSteamPaths() {
@@ -21,8 +23,7 @@ export function resolveSteamPaths() {
             for (let srii = 0; srii < steamRegItems.length; srii++) {
                 if (String(steamRegItems[srii].name) === 'SteamPath') {
                     steamInstallPath = steamRegItems[srii].value;
-                    db.set('steamInstallPath', String(steamInstallPath));
-
+                    db.set(dbKeys.STEAM_INSTALL_PATH, String(steamInstallPath));
                     resolveSteamLibraryPaths(steamInstallPath);
                 }
             }
@@ -39,45 +40,58 @@ export function resolveSteamPaths() {
                 ) {
                     if (String(steamReg64Items[sr64ii].name) === 'SteamPath') {
                         steamInstallPath = steamReg64Items[sr64ii].value;
-                        db.set('steamInstallPath', String(steamInstallPath));
+                        db.set(
+                            dbKeys.STEAM_INSTALL_PATH,
+                            String(steamInstallPath),
+                        );
                         resolveSteamLibraryPaths(steamInstallPath);
                     }
                 }
             }
         });
     }
+
+    resolveSaveGamePaths();
 }
 
 export function resolveSteamLibraryPaths(steamInstallPath) {
-    fs.readFile(
-        `${steamInstallPath}\\steamapps\\libraryfolders.vdf`,
-        'utf8',
-        (err, data) => {
-            if (!err) {
-                let libraryFolderPaths = [];
-                const regex = /"(.*?)"/gm;
-                const matches = data.match(regex);
-                for (let mi = 0; mi < matches.length; mi++) {
-                    const match = matches[mi].replaceAll('"', '');
-                    if (
-                        match === 'path' &&
-                        typeof matches[mi + 1] !== 'undefined'
-                    ) {
-                        const libPath = path.normalize(
-                            matches[mi + 1].replaceAll('"', ''),
-                        );
-                        libraryFolderPaths.push(libPath);
-                    }
-                }
-                db.set('steamLibraryPaths', libraryFolderPaths);
+    const libraryMetaFile = `${steamInstallPath}\\steamapps\\libraryfolders.vdf`;
+    if (!fs.existsSync(libraryMetaFile)) {
+        return;
+    }
+
+    const fileData = fs.readFileSync(libraryMetaFile, 'utf8');
+    let libraryFolderPaths = [];
+    const regex = /"(.*?)"/gm;
+    const matches = fileData.match(regex);
+    for (let mi = 0; mi < matches.length; mi++) {
+        const match = matches[mi].replaceAll('"', '');
+        if (match === 'path' && typeof matches[mi + 1] !== 'undefined') {
+            const libPath = path.normalize(matches[mi + 1].replaceAll('"', ''));
+            libraryFolderPaths.push(libPath);
+        }
+    }
+    db.set(dbKeys.STEAM_LIBRARY_PATHS, libraryFolderPaths);
+
+    let gameInstallPaths = {};
+    for (let sgi = 0; sgi < supportedGames.length; sgi++) {
+        const sg = supportedGames[sgi];
+        gameInstallPaths[sg.slug] = '';
+        for (let lfpi = 0; lfpi < libraryFolderPaths.length; lfpi++) {
+            const libPath = libraryFolderPaths[lfpi];
+            const gameInstallPath = `${libPath}\\steamapps\\common\\${sg.steamFolderName}`;
+            if (fs.existsSync(`${gameInstallPath}\\${sg.exeName}.exe`)) {
+                gameInstallPaths[sg.slug] = gameInstallPath;
+                break;
             }
-        },
-    );
+        }
+    }
+
+    db.set(dbKeys.GAME_INSTALL_PATHS, gameInstallPaths);
 }
 
-export async function resolveSaveFiles() {
+export function resolveSaveGamePaths() {
     const appDataPath = app.getPath('appData');
-    console.log(appDataPath, 'APP DATA');
     let saveGamePaths = {};
     for (let sgi = 0; sgi < supportedGames.length; sgi++) {
         const sg = supportedGames[sgi];
@@ -85,31 +99,70 @@ export async function resolveSaveFiles() {
             `${appDataPath}\\The Creative Assembly\\${sg.savePathFolder}\\save_games`;
     }
 
-    db.set('saveGamePaths', saveGamePaths);
+    db.set(dbKeys.SAVE_GAME_PATHS, saveGamePaths);
 
-    let saveGameFiles = {};
-    for (const gameSlug in saveGamePaths) {
-        saveGameFiles[gameSlug] = [];
-        if (Object.hasOwnProperty.call(saveGamePaths, gameSlug)) {
-            const saveGamePath = saveGamePaths[gameSlug];
+    return saveGamePaths;
+}
 
-            if (!fs.existsSync(saveGamePath)) {
-                return;
-            }
+export async function getWorkshopMods() {
+    const managedGame = db.get(dbKeys.MANAGED_GAME);
+    const managedGameDetails = supportedGames.filter(
+        (sgf) => sgf.slug === managedGame,
+    )[0];
 
-            const files = fs.readdirSync(saveGamePath);
-            for (let fi = 0; fi < files.length; fi++) {
-                const filename = path.join(saveGamePath, files[fi]);
-                if (filename.endsWith('.save')) {
-                    const stat = fs.lstatSync(filename);
-                    saveGameFiles[gameSlug].push({
-                        fileName: files[fi],
-                        stat,
-                    });
-                }
-            }
-        }
+    const dbSubscribedModIds = db.get(dbKeys.STEAM_WORKSHOP_IDS);
+    const dbSubscribedModDetails = db.get(dbKeys.STEAM_WORKSHOP_DETAILS);
+
+    const client = steamworks.init(managedGameDetails.steamId);
+    const subscribedModIds = client.workshop.getSubscribedItems();
+    if (
+        typeof dbSubscribedModIds === 'undefined' ||
+        typeof dbSubscribedModIds[managedGame] === 'undefined' ||
+        typeof dbSubscribedModDetails === 'undefined' ||
+        typeof dbSubscribedModDetails[managedGame] === 'undefined' ||
+        subscribedModIds.sort().toString() !==
+            dbSubscribedModIds[managedGame].sort().toString()
+    ) {
+        db.set(dbKeys.STEAM_WORKSHOP_IDS, {
+            ...dbSubscribedModIds,
+            [managedGame]: subscribedModIds,
+        });
+
+        const subscribedMods = await client.workshop.getItems(subscribedModIds);
+        const subscribedModDetails = subscribedMods.map((sm) => {
+            return {
+                id: sm.publishedFileId,
+                title: sm.title,
+                description: sm.description,
+                steamId: sm.publishedFileId,
+                previewImage: sm.previewUrl,
+                categories: sm.tags.filter((tag) => tag !== 'mod'),
+                modPage: `https://steamcommunity.com/sharedfiles/filedetails/?id=${sm.publishedFileId}`,
+                createdAt: sm.timeCreated
+                    ? new Date(sm.timeCreated * 1000)
+                    : null,
+                updatedAt: sm.timeUpdated
+                    ? new Date(sm.timeUpdated * 1000)
+                    : null,
+            };
+        });
+
+        db.set(dbKeys.STEAM_WORKSHOP_DETAILS, {
+            ...dbSubscribedModDetails,
+            [managedGame]: subscribedModDetails,
+        });
+        return subscribedMods;
     }
 
-    db.set('saveGameFiles', saveGameFiles);
+    return dbSubscribedModDetails[managedGame];
+}
+
+export async function unsubscribeFromWorkshop(workshopItemId) {
+    const managedGame = db.get(dbKeys.MANAGED_GAME);
+    const managedGameDetails = supportedGames.filter(
+        (sgf) => sgf.slug === managedGame,
+    )[0];
+
+    const client = steamworks.init(managedGameDetails.steamId);
+    return await client.workshop.unsubscribe(BigInt(workshopItemId));
 }

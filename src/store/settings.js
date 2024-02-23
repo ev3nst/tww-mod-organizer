@@ -1,10 +1,9 @@
-import { makeAutoObservable, reaction, runInAction } from 'mobx';
-import { debounceEffect } from '../helpers/util';
+import { makeAutoObservable, reaction, runInAction, toJS } from 'mobx';
+import dbKeys from '../main/dbKeys';
 
 class Settings {
-    managedGame = '';
-    tww2Path = '';
-    tww3Path = '';
+    managedGame;
+    gameInstallPaths;
 
     constructor() {
         makeAutoObservable(this);
@@ -12,42 +11,49 @@ class Settings {
 
         reaction(
             () => this.managedGame,
-            debounceEffect(() => {
-                this.saveSettings();
-            }, 500),
+            () => {
+                this.saveCurrentSettings();
+            },
         );
 
         reaction(
-            () => this.tww2Path,
-            debounceEffect(() => {
-                this.saveSettings();
-            }, 500),
-        );
-
-        reaction(
-            () => this.tww3Path,
-            debounceEffect(() => {
-                this.saveSettings();
-            }, 500),
+            () => this.managedGame,
+            () => {
+                this.saveCurrentSettings();
+            },
         );
     }
 
-    saveSettings() {
-        const newSettings = {
-            managedGame: this.managedGame || '',
-            tww2Path: this.tww2Path.replace(/\//g, '\\/') || '',
-            tww3Path: this.tww3Path.replace(/\//g, '\\/') || '',
-        };
-        window.electronAPI.dbSet('settings', newSettings);
-    }
+    async fetchSavedSettings() {
+        const dbManagedGame = await window.electronAPI.dbGet(
+            dbKeys.MANAGED_GAME,
+        );
+        const dbGameInstallPaths = await window.electronAPI.dbGet(
+            dbKeys.GAME_INSTALL_PATHS,
+        );
 
-    fetchSavedSettings() {
-        const savedSettings = window.electronAPI.dbGet('settings');
         runInAction(() => {
-            this.managedGame = savedSettings?.managedGame || '';
-            this.tww2Path = savedSettings?.tww2Path || '';
-            this.tww3Path = savedSettings?.tww3Path || '';
+            if (typeof dbManagedGame !== 'undefined') {
+                this.managedGame = dbManagedGame;
+            }
+
+            if (typeof dbGameInstallPaths !== 'undefined') {
+                this.gameInstallPaths = dbGameInstallPaths;
+            }
         });
+    }
+
+    saveCurrentSettings() {
+        const currentSettings = toJS(this);
+        window.electronAPI.dbSet(
+            dbKeys.MANAGED_GAME,
+            currentSettings.managedGame,
+        );
+
+        window.electronAPI.dbSet(
+            dbKeys.GAME_INSTALL_PATHS,
+            currentSettings.gameInstallPaths,
+        );
     }
 }
 
