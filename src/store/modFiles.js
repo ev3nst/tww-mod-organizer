@@ -1,21 +1,17 @@
-import { makeAutoObservable, reaction, runInAction, toJS } from 'mobx';
+import { makeAutoObservable, runInAction, toJS } from 'mobx';
+import dbKeys from '../main/db/keys';
 
 class ModFiles {
     files = [];
-    ordering = [];
-    tempOrdering = [];
+    modProfile = 'default';
+    availableModProfiles = [];
+    modProfileData = [];
+    tempModProfileData = [];
     draggingId = null;
     loading = false;
 
     constructor() {
         makeAutoObservable(this);
-
-        reaction(
-            () => this.ordering,
-            () => {
-                this.saveOrdering();
-            },
-        );
     }
 
     async getFiles() {
@@ -37,18 +33,55 @@ class ModFiles {
         });
     }
 
-    async getOrdering() {
-        const ordering = await window.electronAPI.getModOrder();
+    async getModProfile() {
+        const currentProfile = await window.electronAPI.dbGet(
+            dbKeys.MOD_PROFILE,
+        );
+        const modProfileData = await window.electronAPI.getModProfile(
+            currentProfile || this.modProfile,
+        );
+        const availableModProfiles =
+            await window.electronAPI.getAvailableModOrderProfiles();
 
         runInAction(() => {
-            this.ordering = ordering;
-            this.tempOrdering = ordering;
+            this.modProfileData = modProfileData;
+            this.tempModProfileData = modProfileData;
+            this.modProfile = currentProfile || 'default';
+            this.availableModProfiles = availableModProfiles || [];
             this.loading = false;
         });
     }
 
-    async saveOrdering() {
-        await window.electronAPI.saveModOrder(toJS(this.ordering));
+    async changeModProfile(profileName) {
+        const modProfileData =
+            await window.electronAPI.getModProfile(profileName);
+        await window.electronAPI.dbSet(dbKeys.MOD_PROFILE, profileName);
+        runInAction(() => {
+            this.modProfileData = modProfileData;
+            this.tempModProfileData = modProfileData;
+            this.modProfile = profileName;
+        });
+    }
+
+    async saveModProfile() {
+        await window.electronAPI.saveModProfile(
+            toJS(this.modProfile),
+            toJS(this.modProfileData),
+        );
+    }
+
+    async createModProfile(profileName) {
+        await window.electronAPI.createModProfile(
+            profileName,
+            toJS(this.modProfileData),
+        );
+
+        let newAvailableModOrderProfiles = toJS(this.availableModProfiles);
+        newAvailableModOrderProfiles.push(profileName);
+        runInAction(() => {
+            this.availableModProfiles = newAvailableModOrderProfiles;
+            this.modProfile = profileName;
+        });
     }
 }
 

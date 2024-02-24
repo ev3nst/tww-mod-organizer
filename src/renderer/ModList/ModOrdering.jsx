@@ -14,9 +14,9 @@ const reorder = (list, startIndex, endIndex) => {
     return result;
 };
 
-function ModOrder({ modIndex, index }) {
+function ModOrder({ modData, index }) {
     return (
-        <Draggable draggableId={modIndex} index={index}>
+        <Draggable draggableId={modData.id} index={index}>
             {(provided) => (
                 <div
                     ref={provided.innerRef}
@@ -24,7 +24,7 @@ function ModOrder({ modIndex, index }) {
                     {...provided.dragHandleProps}
                 >
                     <Chip
-                        key={modIndex}
+                        key={`mod_order_chip_${modData.id}`}
                         size="lg"
                         style={{
                             height: '30px',
@@ -41,21 +41,27 @@ function ModOrder({ modIndex, index }) {
 }
 
 const ModOrderList = React.memo(function ModOrderList({ mods }) {
-    return mods.map((modIndex, index) => (
-        <ModOrder modIndex={modIndex} index={index} key={modIndex} />
+    return mods.map((modData, index) => (
+        <ModOrder
+            modData={modData}
+            index={index}
+            key={`mod_order_component_${modData.id}`}
+        />
     ));
 });
 
 function ModOrdering() {
-    const modFilesData = toJS(modFiles);
-    const modOrderingData = modFilesData.tempOrdering;
     const [modOrderingState, setModOrderingState] = useState([]);
-
+    const tempModProfileData = toJS(modFiles.tempModProfileData);
     useEffect(() => {
-        if (modOrderingState.length === 0) {
-            setModOrderingState(modFilesData.tempOrdering);
+        if (
+            typeof tempModProfileData !== 'undefined' &&
+            modOrderingState.length !== tempModProfileData.length &&
+            tempModProfileData.length > 0
+        ) {
+            setModOrderingState(tempModProfileData);
         }
-    }, [modFilesData.tempOrdering, modOrderingData, modOrderingState.length]);
+    }, [modOrderingState.length, tempModProfileData]);
 
     function onDragEnd(result) {
         runInAction(() => {
@@ -77,15 +83,12 @@ function ModOrdering() {
         );
 
         setModOrderingState(mods);
-        const fromIndex = result.source.index;
-        const toIndex = result.destination.index;
-        const newOrderData = [...modOrderingData];
-        const element = newOrderData.splice(fromIndex, 1)[0];
-        newOrderData.splice(toIndex, 0, element);
         runInAction(() => {
-            modFiles.ordering = newOrderData;
-            modFiles.tempOrdering = newOrderData;
+            modFiles.modProfileData = mods;
+            modFiles.tempModProfileData = mods;
         });
+
+        modFiles.saveModProfile();
     }
 
     if (modOrderingState.length > 0) {
@@ -108,18 +111,21 @@ function ModOrdering() {
 
                         const fromIndex = update.source.index;
                         const toIndex = update.destination.index;
-                        const newOrderData = [...modOrderingData];
-                        const element = newOrderData.splice(fromIndex, 1)[0];
-                        newOrderData.splice(toIndex, 0, element);
-                        const output = newOrderData.map(
-                            (id) =>
-                                modFilesData.files.filter(
-                                    (mf) => mf.id === id,
+                        const newModProfileData = [...modOrderingState];
+                        const element = newModProfileData.splice(
+                            fromIndex,
+                            1,
+                        )[0];
+                        newModProfileData.splice(toIndex, 0, element);
+                        const output = newModProfileData.map(
+                            (modData) =>
+                                modFiles.files.filter(
+                                    (mf) => mf.id === modData.id,
                                 )[0],
                         );
                         runInAction(() => {
                             modFiles.files = output;
-                            modFiles.ordering = newOrderData;
+                            modFiles.modProfileData = newModProfileData;
                         });
                     }}
                 >

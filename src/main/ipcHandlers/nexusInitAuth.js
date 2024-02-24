@@ -6,7 +6,7 @@ import db from '../db';
 import dbKeys from '../db/keys';
 
 export default function nexusInitAuth() {
-    ipcMain.handle('nexus:init_auth', async () => {
+    ipcMain.handle('nexusInitAuth', async () => {
         const nexusWSHost = 'wss://sso.nexusmods.com';
         const wss = new WebSocket(nexusWSHost, {
             perMessageDeflate: false,

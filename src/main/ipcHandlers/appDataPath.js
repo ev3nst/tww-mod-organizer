@@ -1,7 +1,7 @@
 import { ipcMain, app } from 'electron';
 
-export default function electronAppData() {
-    ipcMain.handle('electron:appData', () => {
+export default function appDataPath() {
+    ipcMain.handle('appDataPath', () => {
         return app.getPath('appData');
     });
 }

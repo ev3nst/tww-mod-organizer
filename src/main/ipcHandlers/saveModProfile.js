@@ -6,29 +6,26 @@ import { sync as mkdripSync } from 'mkdirp';
 import dbKeys from '../db/keys';
 import db from '../db';
 
-export default async function gameSaveModOrder() {
+export default async function saveModProfile() {
     ipcMain.handle(
-        'game:saveModOrder',
-        async (_e, newOrder, profileName = 'default') => {
+        'saveModProfile',
+        async (_e, profileName = 'default', newProfileData) => {
             const managedGame = db.get(dbKeys.MANAGED_GAME);
-            const modOrderProfilePath = path.join(
+            const modProfilePath = path.join(
                 app.getPath('userData'),
                 'profiles',
                 managedGame,
             );
 
             const profileFileName = `${profileName}.txt`;
-            const profileFilePath = path.join(
-                modOrderProfilePath,
-                profileFileName,
-            );
+            const profileFilePath = path.join(modProfilePath, profileFileName);
             if (!fs.existsSync(profileFilePath)) {
-                mkdripSync(modOrderProfilePath);
+                mkdripSync(modProfilePath);
             }
 
             fs.writeFileSync(
-                path.join(modOrderProfilePath, profileFileName),
-                JSON.stringify(newOrder),
+                path.join(modProfilePath, profileFileName),
+                JSON.stringify(newProfileData),
             );
         },
     );

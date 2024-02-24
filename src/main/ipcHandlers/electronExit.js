@@ -1,7 +1,7 @@
 import { ipcMain, remote } from 'electron';
 
 export default function electronExit() {
-    ipcMain.handle('electron:exit', () => {
+    ipcMain.handle('electronExit', () => {
         remote.getCurrentWindow().close();
     });
 }

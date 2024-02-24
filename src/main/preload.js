@@ -1,51 +1,54 @@
 import { contextBridge, ipcRenderer } from 'electron';
 
 contextBridge.exposeInMainWorld('electronAPI', {
-    nexusInitAuth: () => ipcRenderer.invoke('nexus:init_auth'),
+    nexusInitAuth: () => ipcRenderer.invoke('nexusInitAuth'),
 
     checkExistingMod: (modName) =>
-        ipcRenderer.invoke('game:checkExistingMod', modName),
+        ipcRenderer.invoke('checkExistingMod', modName),
 
     installMod: (modName, zipPath, sameNameAction) =>
-        ipcRenderer.invoke('game:installMod', modName, zipPath, sameNameAction),
+        ipcRenderer.invoke('installMod', modName, zipPath, sameNameAction),
 
-    getModFiles: () => ipcRenderer.invoke('game:modFiles'),
+    getModFiles: () => ipcRenderer.invoke('getModFiles'),
 
-    saveModOrder: (newOrder, profileName) =>
-        ipcRenderer.invoke('game:saveModOrder', newOrder, profileName),
+    getModProfile: (profileName) =>
+        ipcRenderer.invoke('getModProfile', profileName),
 
-    getModOrder: (profileName) =>
-        ipcRenderer.invoke('game:modOrder', profileName),
+    getAvailableModProfiles: () =>
+        ipcRenderer.invoke('getAvailableModProfiles'),
 
-    getSaveFiles: () => ipcRenderer.invoke('game:saveFiles'),
+    saveModProfile: (profileName, modOrder) =>
+        ipcRenderer.invoke('saveModProfile', profileName, modOrder),
+
+    createModProfile: (profileName, modOrder) =>
+        ipcRenderer.invoke('createModProfile', profileName, modOrder),
+
+    getSaveFiles: () => ipcRenderer.invoke('getSaveFiles'),
 
     deleteSaveFiles: (saveFilePaths) =>
-        ipcRenderer.invoke('game:deleteSaveFiles', saveFilePaths),
+        ipcRenderer.invoke('deleteSaveFiles', saveFilePaths),
 
     steamUnsubscribe: (workshopItemId) =>
-        ipcRenderer.invoke('steam:unsubscribe', workshopItemId),
+        ipcRenderer.invoke('steamUnsubscribe', workshopItemId),
 
-    deleteMod: (modName) => ipcRenderer.invoke('game:deleteMod', modName),
+    deleteMod: (modName) => ipcRenderer.invoke('deleteMod', modName),
 
-    getDownloadedArchives: () => ipcRenderer.invoke('game:downloadedFiles'),
+    getDownloadedArchives: () => ipcRenderer.invoke('getDownloadedArchives'),
 
-    dbGet: (key) => ipcRenderer.invoke('db:get', key),
+    dbGet: (key) => ipcRenderer.invoke('dbGet', key),
 
-    dbSet: (key, value) => ipcRenderer.invoke('db:set', key, value),
+    dbSet: (key, value) => ipcRenderer.invoke('dbSet', key, value),
 
-    pathDirname: (arg) => ipcRenderer.invoke('path:dirname', arg),
+    pathDirname: (arg) => ipcRenderer.invoke('pathDirname', arg),
 
-    pathJoin: (...pathStrings) =>
-        ipcRenderer.invoke('path:join', ...pathStrings),
+    appDataPath: () => ipcRenderer.invoke('appDataPath'),
 
-    appDataPath: () => ipcRenderer.invoke('electron:appData'),
-
-    openExternalLink: (url) => ipcRenderer.invoke('shell:externalLink', url),
+    openExternalLink: (url) => ipcRenderer.invoke('openExternalLink', url),
 
     showItemInFolder: (pathString) =>
-        ipcRenderer.invoke('shell:showItemInFolder', pathString),
+        ipcRenderer.invoke('showItemInFolder', pathString),
 
-    fsExists: (pathString) => ipcRenderer.invoke('fs:exists', pathString),
+    fsExists: (pathString) => ipcRenderer.invoke('fsExists', pathString),
 
-    exit: () => ipcRenderer.invoke('electron:exit'),
+    electronExit: () => ipcRenderer.invoke('electronExit'),
 });

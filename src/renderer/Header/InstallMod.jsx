@@ -142,8 +142,19 @@ const InstallMod = () => {
                                         ...modFilesData,
                                         newModMeta,
                                     ];
+                                    const newModProfileData = [
+                                        ...toJS(modFiles.modProfileData),
+                                    ];
+                                    newModProfileData.push({
+                                        id: newModMeta.id,
+                                        active: true,
+                                    });
                                     runInAction(() => {
                                         modFiles.files = newModFiles;
+                                        modFiles.modProfileData =
+                                            newModProfileData;
+                                        modFiles.tempModProfileData =
+                                            newModProfileData;
                                     });
                                 }
 

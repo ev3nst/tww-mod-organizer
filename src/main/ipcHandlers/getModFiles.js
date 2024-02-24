@@ -7,7 +7,7 @@ import { ulid } from 'ulid';
 import { getWorkshopMods } from '../tools/steam';
 import { getModInstallationPath } from '../tools/resolveManagedPaths';
 
-export async function getModFiles() {
+export async function retrieveModFiles() {
     const steamWorkshopMods = await getWorkshopMods();
     let manuallyInstalledMods = [];
     const modInstallationFolder = getModInstallationPath();
@@ -54,8 +54,8 @@ export async function getModFiles() {
     return modFiles;
 }
 
-export default async function gameModFiles() {
-    ipcMain.handle('game:modFiles', async () => {
-        return await getModFiles();
+export default async function getModFiles() {
+    ipcMain.handle('getModFiles', async () => {
+        return await retrieveModFiles();
     });
 }

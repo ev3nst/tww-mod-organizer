@@ -25,6 +25,7 @@ import nexusLogo from '../../../assets/nexus-logo.png';
 import dbKeys from '../../main/db/keys';
 import { capitalize } from '../../helpers/util';
 import DeleteModModal from './DeleteModModal';
+import ModProfiles from './ModProfiles';
 import ModOrdering from './ModOrdering';
 
 const columns = [
@@ -39,7 +40,7 @@ const columns = [
 function SaveGames() {
     useEffect(() => {
         modFiles.getFiles();
-        modFiles.getOrdering();
+        modFiles.getModProfile();
     }, []);
 
     const [showDeleteModModal, setShowDeleteModModal] = useState({
@@ -58,8 +59,16 @@ function SaveGames() {
             let first = a[sortDescriptor.column];
             let second = b[sortDescriptor.column];
             if (sortDescriptor.column === 'order') {
-                first = modFilesData.ordering.indexOf(a.id);
-                second = modFilesData.ordering.indexOf(b.id);
+                first = modFilesData.modProfileData.findIndex(
+                    function (modData) {
+                        return modData.id === a.id;
+                    },
+                );
+                second = modFilesData.modProfileData.findIndex(
+                    function (modData) {
+                        return modData.id === b.id;
+                    },
+                );
             }
 
             const cmp = first < second ? -1 : first > second ? 0 : 1;
@@ -67,7 +76,7 @@ function SaveGames() {
         });
     }, [
         modFilesData.files,
-        modFilesData.ordering,
+        modFilesData.modProfileData,
         sortDescriptor.column,
         sortDescriptor.direction,
     ]);
@@ -88,10 +97,16 @@ function SaveGames() {
         (row, columnKey) => {
             switch (columnKey) {
                 case 'order':
-                    return typeof modFilesData.ordering !== 'undefined' &&
-                        modFilesData.ordering.indexOf(row.id) !== -1
-                        ? modFilesData.ordering.indexOf(row.id)
-                        : '';
+                    if (typeof modFilesData.modProfileData !== 'undefined') {
+                        const modIndex = modFilesData.modProfileData.findIndex(
+                            function (modData) {
+                                return modData.id === row.id;
+                            },
+                        );
+                        return <p className="text-center">{modIndex}</p>;
+                    }
+
+                    return '';
                 case 'title':
                     return (
                         <div className="flex gap-2">
@@ -223,7 +238,7 @@ function SaveGames() {
                     return row[columnKey];
             }
         },
-        [modFilesData.ordering],
+        [modFilesData.modProfileData],
     );
 
     const classNames = useMemo(
@@ -251,75 +266,80 @@ function SaveGames() {
     );
 
     return (
-        <div className="flex">
-            <ModOrdering />
-            <Table
-                isCompact
-                removeWrapper
-                checkboxesProps={{
-                    classNames: {
-                        wrapper:
-                            'after:bg-foreground after:text-background text-background',
-                    },
-                }}
-                classNames={classNames}
-                topContentPlacement="outside"
-                selectionMode="single"
-                selectedKeys={selectedKeys}
-                onSelectionChange={setSelectedKeys}
-                sortDescriptor={sortDescriptor}
-                onSortChange={setSortDescriptor}
-            >
-                <TableHeader columns={columns}>
-                    {(column) => (
-                        <TableColumn
-                            key={column.uid}
-                            align={
-                                column.uid === 'actions' ? 'center' : 'start'
-                            }
-                            allowsSorting={column.sortable}
-                        >
-                            {column.name}
-                        </TableColumn>
-                    )}
-                </TableHeader>
-                <TableBody
-                    emptyContent={
-                        modFiles.loading === true ? (
-                            <Spinner />
-                        ) : (
-                            'No mods found'
-                        )
-                    }
-                    items={sortedItems}
-                >
-                    {(item) => (
-                        <TableRow
-                            key={item.title}
-                            className={
-                                modFiles.draggingId === item.id
-                                    ? 'bg-slate-800'
-                                    : ''
-                            }
-                        >
-                            {(columnKey) => (
-                                <TableCell className="subpixel-antialiased text-xs">
-                                    {renderCell(item, columnKey)}
-                                </TableCell>
-                            )}
-                        </TableRow>
-                    )}
-                </TableBody>
-            </Table>
-            {showDeleteModModal.isOpen && (
-                <DeleteModModal
-                    selectedModRow={showDeleteModModal.selectedModRow}
-                    onModalStateChange={(newState) => {
-                        setShowDeleteModModal(newState);
+        <>
+            <ModProfiles />
+            <div className="flex">
+                <ModOrdering />
+                <Table
+                    isCompact
+                    removeWrapper
+                    checkboxesProps={{
+                        classNames: {
+                            wrapper:
+                                'after:bg-foreground after:text-background text-background',
+                        },
                     }}
-                />
-            )}
-        </div>
+                    classNames={classNames}
+                    topContentPlacement="outside"
+                    selectionMode="single"
+                    selectedKeys={selectedKeys}
+                    onSelectionChange={setSelectedKeys}
+                    sortDescriptor={sortDescriptor}
+                    onSortChange={setSortDescriptor}
+                >
+                    <TableHeader columns={columns}>
+                        {(column) => (
+                            <TableColumn
+                                key={column.uid}
+                                align={
+                                    column.uid === 'actions'
+                                        ? 'center'
+                                        : 'start'
+                                }
+                                allowsSorting={column.sortable}
+                            >
+                                {column.name}
+                            </TableColumn>
+                        )}
+                    </TableHeader>
+                    <TableBody
+                        emptyContent={
+                            modFiles.loading === true ? (
+                                <Spinner />
+                            ) : (
+                                'No mods found'
+                            )
+                        }
+                        items={sortedItems}
+                    >
+                        {(item) => (
+                            <TableRow
+                                key={item.title}
+                                className={
+                                    modFiles.draggingId === item.id
+                                        ? 'bg-slate-800'
+                                        : ''
+                                }
+                            >
+                                {(columnKey) => (
+                                    <TableCell className="subpixel-antialiased text-xs">
+                                        {renderCell(item, columnKey)}
+                                    </TableCell>
+                                )}
+                            </TableRow>
+                        )}
+                    </TableBody>
+                </Table>
+                {showDeleteModModal.isOpen && (
+                    <DeleteModModal
+                        selectedModRow={showDeleteModModal.selectedModRow}
+                        onModalStateChange={(newState) => {
+                            setShowDeleteModModal(newState);
+                        }}
+                    />
+                )}
+            </div>
+        </>
     );
 }
 

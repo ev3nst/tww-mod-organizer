@@ -7,8 +7,8 @@ import dbKeys from '../db/keys';
 
 import { resolveSaveGamePaths } from '../tools/steam';
 
-export default function gameSaveFiles() {
-    ipcMain.handle('game:saveFiles', () => {
+export default function getSaveFiles() {
+    ipcMain.handle('getSaveFiles', () => {
         const managedGame = db.get(dbKeys.MANAGED_GAME);
         let saveGamePaths = db.get(dbKeys.SAVE_GAME_PATHS);
         if (saveGamePaths.length === 0) {

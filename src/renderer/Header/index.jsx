@@ -117,7 +117,7 @@ const Header = () => {
                                 await modFiles.getFiles();
                                 await saveGameFiles.getFiles();
                                 await downloadedFiles.getFiles();
-                                await modFiles.getOrdering();
+                                await modFiles.getModProfile();
                             }}
                         >
                             <ArrowPathIcon className="h-5 w-5 text-green-500" />

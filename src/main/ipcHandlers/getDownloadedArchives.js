@@ -8,8 +8,8 @@ import dbKeys from '../db/keys';
 
 import supportedGames from '../../store/supportedGames';
 
-export default function gameDownloadedFiles() {
-    ipcMain.handle('game:downloadedFiles', () => {
+export default function getDownloadedArchives() {
+    ipcMain.handle('getDownloadedArchives', () => {
         const managedGame = db.get(dbKeys.MANAGED_GAME);
         let downloadFiles = [];
         let modDownloadPath = db.get(dbKeys.MOD_DOWNLOAD_FOLDER);

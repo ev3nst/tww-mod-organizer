@@ -33,17 +33,16 @@ export function resolveManagedPaths() {
     }
 
     const modInstallationFolder = getModInstallationPath();
+    if (!fs.existsSync(modInstallationFolder)) {
+        fs.mkdirSync(modInstallationFolder);
+    }
+
     const modOrderProfilesPath = path.join(app.getPath('userData'), 'profiles');
     for (let sgi = 0; sgi < supportedGames.length; sgi++) {
         const sg = supportedGames[sgi];
         const gameSpecificDownloadFolder = path.join(modDownloadPath, sg.slug);
         if (!fs.existsSync(gameSpecificDownloadFolder)) {
             mkdripSync(gameSpecificDownloadFolder);
-        }
-
-        const modInstallationPath = path.join(modInstallationFolder, sg.slug);
-        if (!fs.existsSync(modInstallationPath)) {
-            fs.mkdirSync(modInstallationPath);
         }
 
         const gameSpecificModOrderProfile = path.join(

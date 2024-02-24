@@ -7,7 +7,7 @@ import {
     ModalFooter,
 } from '@nextui-org/react';
 import { observer } from 'mobx-react';
-import { runInAction } from 'mobx';
+import { runInAction, toJS } from 'mobx';
 import modFiles from '../../store/modFiles';
 
 const DeleteModModal = ({ selectedModRow, onModalStateChange }) => {
@@ -47,8 +47,18 @@ const DeleteModModal = ({ selectedModRow, onModalStateChange }) => {
                                         (mf) => mf.id !== selectedModRow.id,
                                     );
 
+                                    const newModProfileData = [
+                                        ...toJS(modFiles.modProfileData),
+                                    ].filter(function (mf) {
+                                        return mf.id !== selectedModRow.id;
+                                    });
+
                                     runInAction(() => {
                                         modFiles.files = newModFiles;
+                                        modFiles.modProfileData =
+                                            newModProfileData;
+                                        modFiles.tempModProfileData =
+                                            newModProfileData;
                                     });
 
                                     onModalStateChange({
