@@ -16,6 +16,7 @@ import saveModProfile from './saveModProfile';
 import setActiveMods from './setActiveMods';
 import getSaveFiles from './getSaveFiles';
 import createModProfile from './createModProfile';
+import deleteModProfile from './deleteModProfile';
 import nexusInitAuth from './nexusInitAuth';
 import pathDirname from './pathDirname';
 import showItemInFolder from './showItemInFolder';
@@ -44,6 +45,7 @@ export default function ipcHandlers() {
     setActiveMods();
     getSaveFiles();
     createModProfile();
+    deleteModProfile();
     nexusInitAuth();
     pathDirname();
     showItemInFolder();

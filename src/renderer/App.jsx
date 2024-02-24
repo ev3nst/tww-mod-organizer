@@ -26,7 +26,11 @@ function App() {
     return (
         <NextUIProvider>
             <NextThemesProvider attribute="class" defaultTheme="dark">
-                <Toaster />
+                <Toaster
+                    toastOptions={{
+                        duration: 2000,
+                    }}
+                />
                 {managedGameIsNotEmpty ? (
                     <main className="w-full h-full relative">
                         <div

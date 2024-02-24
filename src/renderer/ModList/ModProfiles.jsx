@@ -144,7 +144,13 @@ const ModProfiles = () => {
                 className="ml-5"
                 color="danger"
                 endContent={<TrashIcon width={20} height={20} />}
-                onClick={() => {}}
+                onClick={() => {
+                    if (modFiles.modProfile !== 'default') {
+                        setDeleteProfileModal(true);
+                    } else {
+                        toast.error('Default profile cannot be deleted.');
+                    }
+                }}
             >
                 DELETE
             </Button>
@@ -161,13 +167,16 @@ const ModProfiles = () => {
                     </ModalBody>
                     <ModalFooter>
                         <Button
-                            color="primary"
-                            onPress={() => {
-                                modFiles.deleteModProfile(modFiles.modProfile);
+                            color="danger"
+                            onPress={async () => {
+                                await window.electronAPI.deleteModProfile(
+                                    modFiles.modProfile,
+                                );
+                                modFiles.changeModProfile('default');
                                 setDeleteProfileModal(false);
                             }}
                         >
-                            Create
+                            Delete
                         </Button>
                         <Button
                             onPress={() => {

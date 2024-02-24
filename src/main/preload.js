@@ -23,6 +23,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
     createModProfile: (profileName, modProfileData) =>
         ipcRenderer.invoke('createModProfile', profileName, modProfileData),
 
+    deleteModProfile: (profileName) =>
+        ipcRenderer.invoke('deleteModProfile', profileName),
+
     setActiveMods: (modIds) => ipcRenderer.invoke('setActiveMods', modIds),
 
     getSaveFiles: () => ipcRenderer.invoke('getSaveFiles'),
