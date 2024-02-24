@@ -57,7 +57,7 @@ const InstallMod = () => {
                 }}
             />
 
-            <Modal isOpen={installModConfirm.isModalOpen}>
+            <Modal isOpen={installModConfirm.isModalOpen} hideCloseButton>
                 <ModalContent>
                     <ModalHeader className="flex flex-col gap-1">
                         Install Mod

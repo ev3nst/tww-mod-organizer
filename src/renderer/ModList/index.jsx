@@ -271,7 +271,7 @@ function SaveGames() {
                     )}
                 </TableBody>
             </Table>
-            <Modal isOpen={deleteModConfirm.isOpen}>
+            <Modal isOpen={deleteModConfirm.isOpen} hideCloseButton>
                 <ModalContent>
                     {() => (
                         <>

@@ -151,7 +151,7 @@ function Startup() {
     };
 
     return (
-        <Modal size="5xl" isOpen={showGameSelectorModal}>
+        <Modal size="5xl" isOpen={showGameSelectorModal} hideCloseButton>
             <ModalContent className="pb-4">
                 <ModalHeader className="flex flex-col gap-5">
                     Choose which game to manage

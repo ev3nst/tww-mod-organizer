@@ -67,7 +67,7 @@ const Settings = () => {
                     Settings
                 </Button>
             </NavbarItem>
-            <Modal isOpen={settingsModal} size="3xl">
+            <Modal isOpen={settingsModal} size="3xl" hideCloseButton>
                 <ModalContent>
                     <ModalHeader className="flex flex-col gap-1">
                         Settings
