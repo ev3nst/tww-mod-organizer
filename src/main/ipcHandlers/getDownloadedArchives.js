@@ -5,7 +5,6 @@ import { sync as mkdripSync } from 'mkdirp';
 
 import db from '../db';
 import dbKeys from '../db/keys';
-
 import supportedGames from '../../store/supportedGames';
 
 export default function getDownloadedArchives() {

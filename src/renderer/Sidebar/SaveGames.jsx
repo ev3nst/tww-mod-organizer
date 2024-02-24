@@ -65,7 +65,7 @@ function SaveGames() {
             const cellValue = row[columnKey];
             switch (columnKey) {
                 case 'name':
-                    return <p className="truncate max-w-56">{cellValue}</p>;
+                    return <p className="max-w-56">{cellValue}</p>;
                 case 'date':
                     return <p>{new Date(cellValue).formattedDate()}</p>;
                 case 'size':
@@ -226,6 +226,11 @@ function SaveGames() {
                 {(column) => (
                     <TableColumn
                         key={column.uid}
+                        className={
+                            column.uid === 'size' || column.uid === 'date'
+                                ? 'hidden xl:table-cell'
+                                : ''
+                        }
                         align={column.uid === 'actions' ? 'center' : 'start'}
                         allowsSorting={column.sortable}
                     >
@@ -237,7 +242,9 @@ function SaveGames() {
                 {(item) => (
                     <TableRow key={item.name}>
                         {(columnKey) => (
-                            <TableCell className="subpixel-antialiased text-xs">
+                            <TableCell
+                                className={`subpixel-antialiased text-xs ${columnKey === 'size' || columnKey === 'date' ? 'hidden xl:table-cell' : ''}`}
+                            >
                                 {renderCell(item, columnKey)}
                             </TableCell>
                         )}

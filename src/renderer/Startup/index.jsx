@@ -40,7 +40,7 @@ function Startup() {
                     className="grow"
                     shadow="sm"
                     isPressable
-                    onPress={() => {
+                    onPress={async () => {
                         if (gamePathExists === true) {
                             runInAction(() => {
                                 settings.managedGame = gameDetails.slug;

@@ -4,18 +4,21 @@ import fs from 'fs';
 
 import db from '../db';
 import dbKeys from '../db/keys';
-
 import { resolveSaveGamePaths } from '../tools/steam';
 
 export default function getSaveFiles() {
     ipcMain.handle('getSaveFiles', () => {
         const managedGame = db.get(dbKeys.MANAGED_GAME);
         let saveGamePaths = db.get(dbKeys.SAVE_GAME_PATHS);
-        if (saveGamePaths.length === 0) {
+        if (
+            typeof saveGamePaths === 'undefined' ||
+            !Array.isArray(saveGamePaths) ||
+            saveGamePaths.length === 0
+        ) {
             saveGamePaths = resolveSaveGamePaths();
         }
 
-        let saveGameFiles = [];
+        const saveGameFiles = [];
         if (typeof saveGamePaths[managedGame] !== 'undefined') {
             const saveGamePath = saveGamePaths[managedGame];
             if (!fs.existsSync(saveGamePath)) {

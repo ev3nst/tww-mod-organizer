@@ -5,10 +5,9 @@ import { sync as mkdripSync } from 'mkdirp';
 
 import db from '../db';
 import dbKeys from '../db/keys';
-
 import supportedGames from '../../store/supportedGames';
 
-export function getModInstallationPath() {
+export function resolveModInstallationPath() {
     let modInstallationPath = db.get(dbKeys.MOD_INSTALLATION_FOLDER);
     if (!modInstallationPath) {
         modInstallationPath = path.join(app.getPath('userData'), 'mods');
@@ -32,12 +31,12 @@ export function resolveManagedPaths() {
         db.set(dbKeys.MOD_DOWNLOAD_FOLDER, modDownloadPath);
     }
 
-    const modInstallationFolder = getModInstallationPath();
+    const modInstallationFolder = resolveModInstallationPath();
     if (!fs.existsSync(modInstallationFolder)) {
         fs.mkdirSync(modInstallationFolder);
     }
 
-    const modOrderProfilesPath = path.join(app.getPath('userData'), 'profiles');
+    const modProfilesPath = path.join(app.getPath('userData'), 'profiles');
     for (let sgi = 0; sgi < supportedGames.length; sgi++) {
         const sg = supportedGames[sgi];
         const gameSpecificDownloadFolder = path.join(modDownloadPath, sg.slug);
@@ -45,12 +44,9 @@ export function resolveManagedPaths() {
             mkdripSync(gameSpecificDownloadFolder);
         }
 
-        const gameSpecificModOrderProfile = path.join(
-            modOrderProfilesPath,
-            sg.slug,
-        );
-        if (!fs.existsSync(gameSpecificModOrderProfile)) {
-            mkdripSync(gameSpecificModOrderProfile);
+        const gameSpecificModProfile = path.join(modProfilesPath, sg.slug);
+        if (!fs.existsSync(gameSpecificModProfile)) {
+            mkdripSync(gameSpecificModProfile);
         }
     }
 }

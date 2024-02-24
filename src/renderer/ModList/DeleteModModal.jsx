@@ -39,7 +39,7 @@ const DeleteModModal = ({ selectedModRow, onModalStateChange }) => {
                                         );
                                     } else {
                                         await window.electronAPI.deleteMod(
-                                            selectedModRow.title,
+                                            selectedModRow,
                                         );
                                     }
 

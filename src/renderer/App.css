@@ -9,3 +9,6 @@ body,
     height: 100vh;
     width: 100%;
 }
+.modlist-table [data-selected='true']::before {
+    content: none !important;
+}

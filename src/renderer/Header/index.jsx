@@ -25,6 +25,7 @@ import InstallMod from './InstallMod';
 import SwitchGames from './SwitchGames';
 import Settings from './Settings';
 
+import appIcon from '../../../assets/icon.png';
 import nexusLogo from '../../../assets/nexus-logo.png';
 
 const icons = {
@@ -40,6 +41,13 @@ const icons = {
 const Header = () => {
     return (
         <Navbar maxWidth="full" isBordered>
+            <Image
+                src={appIcon}
+                style={{
+                    width: '50px',
+                    height: '50px',
+                }}
+            />
             <NavbarContent justify="start">
                 <SwitchGames />
                 <Dropdown>

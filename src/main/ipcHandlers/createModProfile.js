@@ -19,15 +19,11 @@ export default async function createModProfile() {
 
             const profileFileName = `${profileName}.txt`;
             const profileFilePath = path.join(modProfilePath, profileFileName);
-            if (!fs.existsSync(profileFilePath)) {
+            if (!fs.existsSync(modProfilePath)) {
                 mkdripSync(modProfilePath);
             }
 
-            fs.writeFileSync(
-                path.join(modProfilePath, profileFileName),
-                JSON.stringify(modProfileData),
-            );
-
+            fs.writeFileSync(profileFilePath, JSON.stringify(modProfileData));
             db.set(dbKeys.MOD_PROFILE, profileName);
         },
     );

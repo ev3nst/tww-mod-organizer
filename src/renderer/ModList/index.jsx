@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState } from 'react';
 import {
     Table,
     TableHeader,
@@ -6,264 +6,63 @@ import {
     TableBody,
     TableRow,
     TableCell,
-    Button,
-    DropdownTrigger,
-    Dropdown,
-    DropdownMenu,
-    DropdownItem,
-    Link,
     Spinner,
-    Image,
 } from '@nextui-org/react';
+import { runInAction, toJS } from 'mobx';
 import { observer } from 'mobx-react';
-import { toJS } from 'mobx';
-import { EyeIcon, FolderIcon, TrashIcon } from '@heroicons/react/24/solid';
-import { VerticalDotsIcon } from '../Icons';
 import modFiles from '../../store/modFiles';
-import steamLogo from '../../../assets/steam-logo.png';
-import nexusLogo from '../../../assets/nexus-logo.png';
-import dbKeys from '../../main/db/keys';
-import { capitalize } from '../../helpers/util';
 import DeleteModModal from './DeleteModModal';
 import ModProfiles from './ModProfiles';
 import ModOrdering from './ModOrdering';
+import ModListCell from './ModListCell';
+import ModListStyles from './ModListStyles';
 
 const columns = [
-    { name: '#', uid: 'order', sortable: true },
-    { name: 'TITLE', uid: 'title', sortable: true },
+    { name: '#', uid: 'order', sortable: false },
+    { name: 'TITLE', uid: 'title', sortable: false },
     { name: 'CATEGORIES', uid: 'categories', sortable: false },
     { name: 'CONFLICT', uid: 'conflict', sortable: false },
     { name: 'VERSION', uid: 'version', sortable: false },
     { name: 'ACTIONS', uid: 'actions', sortable: false },
 ];
 
-function SaveGames() {
-    useEffect(() => {
-        modFiles.getFiles();
-        modFiles.getModProfile();
-    }, []);
+const initialSort = {
+    column: 'order',
+    direction: 'ascending',
+};
 
+function ModList() {
+    const modFilesData = toJS(modFiles);
+    const selectedKeys = new Set([]);
+    for (let macti = 0; macti < modFilesData.modProfileData.length; macti++) {
+        const modProfData = modFilesData.modProfileData[macti];
+        if (modProfData.active === true) {
+            const indx = modFilesData.files.findIndex(
+                (fi) => fi.id === modProfData.id,
+            );
+            selectedKeys.add(modFilesData.files[indx].title);
+        }
+    }
     const [showDeleteModModal, setShowDeleteModModal] = useState({
         isOpen: false,
         selectedModRow: null,
     });
-    const [selectedKeys, setSelectedKeys] = useState(new Set([]));
-    const [sortDescriptor, setSortDescriptor] = useState({
-        column: 'order',
-        direction: 'ascending',
+
+    const items = modFilesData.files.slice().sort((a, b) => {
+        let first = a[initialSort.column];
+        let second = b[initialSort.column];
+        if (initialSort.column === 'order') {
+            first = modFilesData.modProfileData.findIndex(function (modData) {
+                return modData.id === a.id;
+            });
+            second = modFilesData.modProfileData.findIndex(function (modData) {
+                return modData.id === b.id;
+            });
+        }
+
+        const cmp = first < second ? -1 : first > second ? 0 : 1;
+        return initialSort.direction === 'descending' ? -cmp : cmp;
     });
-
-    const modFilesData = toJS(modFiles);
-    const sortedItems = useMemo(() => {
-        return [...modFilesData.files].sort((a, b) => {
-            let first = a[sortDescriptor.column];
-            let second = b[sortDescriptor.column];
-            if (sortDescriptor.column === 'order') {
-                first = modFilesData.modProfileData.findIndex(
-                    function (modData) {
-                        return modData.id === a.id;
-                    },
-                );
-                second = modFilesData.modProfileData.findIndex(
-                    function (modData) {
-                        return modData.id === b.id;
-                    },
-                );
-            }
-
-            const cmp = first < second ? -1 : first > second ? 0 : 1;
-            return sortDescriptor.direction === 'descending' ? -cmp : cmp;
-        });
-    }, [
-        modFilesData.files,
-        modFilesData.modProfileData,
-        sortDescriptor.column,
-        sortDescriptor.direction,
-    ]);
-
-    const renderModIcon = (row) => {
-        if (typeof row.steamId !== 'undefined') {
-            return <Image src={steamLogo} width={20} height={20} />;
-        }
-
-        if (typeof row.nexusId !== 'undefined') {
-            return <Image src={nexusLogo} width={20} height={20} />;
-        }
-
-        return <FolderIcon width={20} height={20} />;
-    };
-
-    const renderCell = useCallback(
-        (row, columnKey) => {
-            switch (columnKey) {
-                case 'order':
-                    if (typeof modFilesData.modProfileData !== 'undefined') {
-                        const modIndex = modFilesData.modProfileData.findIndex(
-                            function (modData) {
-                                return modData.id === row.id;
-                            },
-                        );
-                        return <p className="text-center">{modIndex}</p>;
-                    }
-
-                    return '';
-                case 'title':
-                    return (
-                        <div className="flex gap-2">
-                            {renderModIcon(row)}
-
-                            <p className="truncate">{row.title}</p>
-                        </div>
-                    );
-                case 'categories':
-                    if (
-                        typeof row.categories !== 'undefined' &&
-                        Array.isArray(row.categories)
-                    ) {
-                        return (
-                            <>
-                                {row.categories.map((category) => (
-                                    <p key={`mod_list_${row.title}_categories`}>
-                                        {capitalize(category)}
-                                    </p>
-                                ))}
-                            </>
-                        );
-                    }
-
-                    return '';
-                case 'version':
-                    if (typeof row.steamId !== 'undefined') {
-                        return (
-                            <p className="truncate">
-                                {row.updatedAt !== null
-                                    ? new Date(row.updatedAt).formattedDate()
-                                    : ''}
-                            </p>
-                        );
-                    }
-
-                    return row.version;
-
-                case 'actions':
-                    return (
-                        <div className="relative flex justify-end items-center gap-2">
-                            <Dropdown className="bg-background border-1 border-default-200">
-                                <DropdownTrigger>
-                                    <Button
-                                        isIconOnly
-                                        radius="full"
-                                        size="sm"
-                                        variant="light"
-                                    >
-                                        <VerticalDotsIcon className="text-default-400" />
-                                    </Button>
-                                </DropdownTrigger>
-                                <DropdownMenu>
-                                    {typeof row.modPage !== 'undefined' ? (
-                                        <DropdownItem
-                                            startContent={
-                                                <EyeIcon className="h-4 w-4" />
-                                            }
-                                        >
-                                            <Link
-                                                className="text-sm text-dark"
-                                                onClick={() => {
-                                                    window.electronAPI.openExternalLink(
-                                                        row.modPage,
-                                                    );
-                                                }}
-                                            >
-                                                Open Mod Page in Browser
-                                            </Link>
-                                        </DropdownItem>
-                                    ) : (
-                                        <DropdownItem
-                                            startContent={
-                                                <EyeIcon className="h-4 w-4" />
-                                            }
-                                        >
-                                            <Link
-                                                className="text-sm text-dark"
-                                                onClick={async () => {
-                                                    const modInstallationFolder =
-                                                        await window.electronAPI.dbGet(
-                                                            dbKeys.MOD_INSTALLATION_FOLDER,
-                                                        );
-                                                    window.electronAPI.showItemInFolder(
-                                                        `${modInstallationFolder}\\${row.title}`,
-                                                    );
-                                                }}
-                                            >
-                                                Open Mod Folder
-                                            </Link>
-                                        </DropdownItem>
-                                    )}
-
-                                    {typeof row.steamId !== 'undefined' && (
-                                        <DropdownItem
-                                            startContent={
-                                                <EyeIcon className="h-4 w-4" />
-                                            }
-                                        >
-                                            <Link
-                                                className="text-sm text-dark"
-                                                href={`steam://openurl/${row.modPage}`}
-                                            >
-                                                Open Mod Page in Steam Client
-                                            </Link>
-                                        </DropdownItem>
-                                    )}
-
-                                    <DropdownItem
-                                        onClick={() => {
-                                            setShowDeleteModModal({
-                                                isOpen: true,
-                                                selectedModRow: row,
-                                            });
-                                        }}
-                                        startContent={
-                                            <TrashIcon className="h-4 w-4 text-danger" />
-                                        }
-                                    >
-                                        {typeof row.steamId !== 'undefined'
-                                            ? 'Unsubscribe'
-                                            : 'Delete'}
-                                    </DropdownItem>
-                                </DropdownMenu>
-                            </Dropdown>
-                        </div>
-                    );
-                default:
-                    return row[columnKey];
-            }
-        },
-        [modFilesData.modProfileData],
-    );
-
-    const classNames = useMemo(
-        () => ({
-            wrapper: ['max-h-[382px]', 'max-w-3xl', 'bg-background'],
-            th: [
-                'bg-transparent',
-                'text-default-500',
-                'border-b',
-                'border-divider',
-            ],
-            td: [
-                // changing the rows border radius
-                // first
-                'group-data-[first=true]:first:before:rounded-none',
-                'group-data-[first=true]:last:before:rounded-none',
-                // middle
-                'group-data-[middle=true]:before:rounded-none',
-                // last
-                'group-data-[last=true]:first:before:rounded-none',
-                'group-data-[last=true]:last:before:rounded-none',
-            ],
-        }),
-        [],
-    );
 
     return (
         <>
@@ -279,24 +78,43 @@ function SaveGames() {
                                 'after:bg-foreground after:text-background text-background',
                         },
                     }}
-                    classNames={classNames}
+                    classNames={ModListStyles}
                     topContentPlacement="outside"
-                    selectionMode="single"
+                    selectionMode="multiple"
                     selectedKeys={selectedKeys}
-                    onSelectionChange={setSelectedKeys}
-                    sortDescriptor={sortDescriptor}
-                    onSortChange={setSortDescriptor}
+                    onSelectionChange={async (keys) => {
+                        const selectedArr = Array.from(keys);
+                        const selectedModFiles = modFilesData.files.filter(
+                            (mf) => selectedArr.includes(mf.title),
+                        );
+                        const selectedModIds = selectedModFiles.map(
+                            (smf) => smf.id,
+                        );
+                        const updatedModProfileData =
+                            await window.electronAPI.setActiveMods(
+                                selectedModIds,
+                            );
+                        runInAction(() => {
+                            modFiles.modProfileData = updatedModProfileData;
+                        });
+                    }}
                 >
                     <TableHeader columns={columns}>
                         {(column) => (
                             <TableColumn
+                                className={
+                                    column.uid === 'categories' ||
+                                    column.uid === 'version'
+                                        ? 'hidden xl:table-cell'
+                                        : ''
+                                }
                                 key={column.uid}
                                 align={
-                                    column.uid === 'actions'
+                                    column.uid === 'actions' ||
+                                    column.uid === 'order'
                                         ? 'center'
                                         : 'start'
                                 }
-                                allowsSorting={column.sortable}
                             >
                                 {column.name}
                             </TableColumn>
@@ -304,30 +122,44 @@ function SaveGames() {
                     </TableHeader>
                     <TableBody
                         emptyContent={
-                            modFiles.loading === true ? (
+                            modFilesData.loading === true ? (
                                 <Spinner />
                             ) : (
                                 'No mods found'
                             )
                         }
-                        items={sortedItems}
+                        items={items}
                     >
-                        {(item) => (
-                            <TableRow
-                                key={item.title}
-                                className={
-                                    modFiles.draggingId === item.id
-                                        ? 'bg-slate-800'
-                                        : ''
-                                }
-                            >
-                                {(columnKey) => (
-                                    <TableCell className="subpixel-antialiased text-xs">
-                                        {renderCell(item, columnKey)}
-                                    </TableCell>
-                                )}
-                            </TableRow>
-                        )}
+                        {(item) => {
+                            return (
+                                <TableRow
+                                    key={item.title}
+                                    className={
+                                        modFilesData.draggingId === item.id
+                                            ? 'bg-slate-800'
+                                            : ''
+                                    }
+                                >
+                                    {(columnKey) => (
+                                        <TableCell
+                                            className={`subpixel-antialiased text-xs ${columnKey === 'categories' || columnKey === 'version' ? 'hidden xl:table-cell' : ''}`}
+                                        >
+                                            <ModListCell
+                                                row={item}
+                                                columnKey={columnKey}
+                                                onDeleteModalClick={(
+                                                    deleteModModalState,
+                                                ) => {
+                                                    setShowDeleteModModal(
+                                                        deleteModModalState,
+                                                    );
+                                                }}
+                                            />
+                                        </TableCell>
+                                    )}
+                                </TableRow>
+                            );
+                        }}
                     </TableBody>
                 </Table>
                 {showDeleteModModal.isOpen && (
@@ -343,4 +175,4 @@ function SaveGames() {
     );
 }
 
-export default observer(SaveGames);
+export default observer(ModList);

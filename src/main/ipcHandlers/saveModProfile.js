@@ -23,10 +23,7 @@ export default async function saveModProfile() {
                 mkdripSync(modProfilePath);
             }
 
-            fs.writeFileSync(
-                path.join(modProfilePath, profileFileName),
-                JSON.stringify(newProfileData),
-            );
+            fs.writeFileSync(profileFilePath, JSON.stringify(newProfileData));
         },
     );
 }

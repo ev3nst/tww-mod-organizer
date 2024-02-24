@@ -18,7 +18,7 @@ class ModFiles {
         runInAction(() => {
             this.loading = true;
         });
-        const modFiles = await window.electronAPI.getModFiles();
+        const modFiles = await window.electronAPI.getModsMetaInformation();
         runInAction(() => {
             if (
                 typeof modFiles !== 'undefined' &&
@@ -41,7 +41,7 @@ class ModFiles {
             currentProfile || this.modProfile,
         );
         const availableModProfiles =
-            await window.electronAPI.getAvailableModOrderProfiles();
+            await window.electronAPI.getAvailableModProfiles();
 
         runInAction(() => {
             this.modProfileData = modProfileData;
@@ -76,10 +76,10 @@ class ModFiles {
             toJS(this.modProfileData),
         );
 
-        let newAvailableModOrderProfiles = toJS(this.availableModProfiles);
-        newAvailableModOrderProfiles.push(profileName);
+        let newAvailableModProfiles = toJS(this.availableModProfiles);
+        newAvailableModProfiles.push(profileName);
         runInAction(() => {
-            this.availableModProfiles = newAvailableModOrderProfiles;
+            this.availableModProfiles = newAvailableModProfiles;
             this.modProfile = profileName;
         });
     }

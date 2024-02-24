@@ -40,7 +40,6 @@ const SwitchGames = () => {
                     }}
                 />
             ))}
-
             <Dropdown>
                 <NavbarItem>
                     <DropdownTrigger>
@@ -53,7 +52,7 @@ const SwitchGames = () => {
                             radius="sm"
                             variant="light"
                         >
-                            Mod Organizer - {currentGameDetails.name}
+                            {currentGameDetails.name}
                         </Button>
                     </DropdownTrigger>
                 </NavbarItem>

@@ -117,7 +117,6 @@ export function resolveSaveGamePaths() {
     }
 
     db.set(dbKeys.SAVE_GAME_PATHS, saveGamePaths);
-
     return saveGamePaths;
 }
 

@@ -1,18 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Chip } from '@nextui-org/react';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { EllipsisHorizontalIcon } from '@heroicons/react/24/solid';
 import modFiles from '../../store/modFiles';
-import { runInAction, toJS } from 'mobx';
+import { runInAction } from 'mobx';
 import { observer } from 'mobx-react';
-
-const reorder = (list, startIndex, endIndex) => {
-    const result = Array.from(list);
-    const [removed] = result.splice(startIndex, 1);
-    result.splice(endIndex, 0, removed);
-
-    return result;
-};
 
 function ModOrder({ modData, index }) {
     return (
@@ -51,18 +43,6 @@ const ModOrderList = React.memo(function ModOrderList({ mods }) {
 });
 
 function ModOrdering() {
-    const [modOrderingState, setModOrderingState] = useState([]);
-    const tempModProfileData = toJS(modFiles.tempModProfileData);
-    useEffect(() => {
-        if (
-            typeof tempModProfileData !== 'undefined' &&
-            modOrderingState.length !== tempModProfileData.length &&
-            tempModProfileData.length > 0
-        ) {
-            setModOrderingState(tempModProfileData);
-        }
-    }, [modOrderingState.length, tempModProfileData]);
-
     function onDragEnd(result) {
         runInAction(() => {
             modFiles.draggingId = null;
@@ -76,13 +56,10 @@ function ModOrdering() {
             return;
         }
 
-        const mods = reorder(
-            modOrderingState,
-            result.source.index,
-            result.destination.index,
-        );
+        const mods = Array.from(modFiles.tempModProfileData);
+        const [removed] = mods.splice(result.source.index, 1);
+        mods.splice(result.destination.index, 0, removed);
 
-        setModOrderingState(mods);
         runInAction(() => {
             modFiles.modProfileData = mods;
             modFiles.tempModProfileData = mods;
@@ -91,7 +68,7 @@ function ModOrdering() {
         modFiles.saveModProfile();
     }
 
-    if (modOrderingState.length > 0) {
+    if (modFiles.tempModProfileData.length > 0) {
         return (
             <div className="mt-11 px-4">
                 <DragDropContext
@@ -111,7 +88,9 @@ function ModOrdering() {
 
                         const fromIndex = update.source.index;
                         const toIndex = update.destination.index;
-                        const newModProfileData = [...modOrderingState];
+                        const newModProfileData = [
+                            ...modFiles.tempModProfileData,
+                        ];
                         const element = newModProfileData.splice(
                             fromIndex,
                             1,
@@ -135,7 +114,9 @@ function ModOrdering() {
                                 ref={provided.innerRef}
                                 {...provided.droppableProps}
                             >
-                                <ModOrderList mods={modOrderingState} />
+                                <ModOrderList
+                                    mods={modFiles.tempModProfileData}
+                                />
                                 {provided.placeholder}
                             </div>
                         )}

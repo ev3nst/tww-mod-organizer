@@ -2,17 +2,30 @@ import { ipcMain } from 'electron';
 import path from 'path';
 import fs from 'fs';
 import { readdir } from 'fs/promises';
+import { sync as mkdripSync } from 'mkdirp';
 import { ulid } from 'ulid';
 
+import db from '../db';
+import dbKeys from '../db/keys';
 import { getWorkshopMods } from '../tools/steam';
-import { getModInstallationPath } from '../tools/resolveManagedPaths';
+import { resolveModInstallationPath } from '../tools/resolveManagedPaths';
 
-export async function retrieveModFiles() {
+export async function retrieveModsMetaInformation() {
+    const managedGame = db.get(dbKeys.MANAGED_GAME);
     const steamWorkshopMods = await getWorkshopMods();
     let manuallyInstalledMods = [];
-    const modInstallationFolder = getModInstallationPath();
+    const modInstallationFolder = resolveModInstallationPath();
+    const gameSpecificModInstallFolder = path.join(
+        modInstallationFolder,
+        managedGame,
+    );
+
+    if (!fs.existsSync(gameSpecificModInstallFolder)) {
+        mkdripSync(gameSpecificModInstallFolder);
+    }
+
     const directories = (
-        await readdir(modInstallationFolder, { withFileTypes: true })
+        await readdir(gameSpecificModInstallFolder, { withFileTypes: true })
     )
         .filter((dirent) => dirent.isDirectory())
         .map((dir) => dir.name);
@@ -20,7 +33,7 @@ export async function retrieveModFiles() {
     for (let di = 0; di < directories.length; di++) {
         const dir = directories[di];
         const metaDataPath = path.join(
-            modInstallationFolder,
+            gameSpecificModInstallFolder,
             dir,
             'tww-mod-organizer.meta',
         );
@@ -35,11 +48,7 @@ export async function retrieveModFiles() {
         } else {
             const modMetaTextData = fs.readFileSync(metaDataPath, 'utf8');
             let modMeta;
-            try {
-                modMeta = JSON.parse(modMetaTextData);
-            } catch (e) {
-                console.warn(e);
-            }
+            modMeta = JSON.parse(modMetaTextData);
 
             if (!modMeta) {
                 manuallyInstalledMods.push(blankNewMeta);
@@ -54,8 +63,8 @@ export async function retrieveModFiles() {
     return modFiles;
 }
 
-export default async function getModFiles() {
-    ipcMain.handle('getModFiles', async () => {
-        return await retrieveModFiles();
+export default async function getModsMetaInformation() {
+    ipcMain.handle('getModsMetaInformation', async () => {
+        return await retrieveModsMetaInformation();
     });
 }

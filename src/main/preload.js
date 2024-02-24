@@ -9,7 +9,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     installMod: (modName, zipPath, sameNameAction) =>
         ipcRenderer.invoke('installMod', modName, zipPath, sameNameAction),
 
-    getModFiles: () => ipcRenderer.invoke('getModFiles'),
+    getModsMetaInformation: () => ipcRenderer.invoke('getModsMetaInformation'),
 
     getModProfile: (profileName) =>
         ipcRenderer.invoke('getModProfile', profileName),
@@ -17,11 +17,13 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getAvailableModProfiles: () =>
         ipcRenderer.invoke('getAvailableModProfiles'),
 
-    saveModProfile: (profileName, modOrder) =>
-        ipcRenderer.invoke('saveModProfile', profileName, modOrder),
+    saveModProfile: (profileName, modProfileData) =>
+        ipcRenderer.invoke('saveModProfile', profileName, modProfileData),
 
-    createModProfile: (profileName, modOrder) =>
-        ipcRenderer.invoke('createModProfile', profileName, modOrder),
+    createModProfile: (profileName, modProfileData) =>
+        ipcRenderer.invoke('createModProfile', profileName, modProfileData),
+
+    setActiveMods: (modIds) => ipcRenderer.invoke('setActiveMods', modIds),
 
     getSaveFiles: () => ipcRenderer.invoke('getSaveFiles'),
 
@@ -31,7 +33,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     steamUnsubscribe: (workshopItemId) =>
         ipcRenderer.invoke('steamUnsubscribe', workshopItemId),
 
-    deleteMod: (modName) => ipcRenderer.invoke('deleteMod', modName),
+    deleteMod: (modDetails) => ipcRenderer.invoke('deleteMod', modDetails),
 
     getDownloadedArchives: () => ipcRenderer.invoke('getDownloadedArchives'),
 

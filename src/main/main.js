@@ -58,10 +58,10 @@ const createWindow = () => {
 
     mainWindow = new BrowserWindow({
         show: false,
-        width: 1024,
-        height: 728,
-        minWidth: 1024,
-        minHeight: 728,
+        width: 1280,
+        height: 800,
+        minWidth: 1280,
+        minHeight: 800,
         autoHideMenuBar: true,
         icon: getAssetPath('icon.png'),
         webPreferences: {
@@ -77,6 +77,7 @@ const createWindow = () => {
         if (!mainWindow) {
             throw new Error('"mainWindow" is not defined');
         }
+
         if (process.env.START_MINIMIZED) {
             mainWindow.minimize();
         } else {

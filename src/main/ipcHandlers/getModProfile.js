@@ -1,11 +1,11 @@
-import { app, dialog, ipcMain } from 'electron';
+import { app, ipcMain } from 'electron';
 import path from 'path';
 import fs from 'fs';
 import { sync as mkdripSync } from 'mkdirp';
 
 import dbKeys from '../db/keys';
 import db from '../db';
-import { retrieveModFiles } from './getModFiles';
+import { retrieveModsMetaInformation } from './getModsMetaInformation';
 
 export default async function getModProfile() {
     ipcMain.handle('getModProfile', async (_e, profileName = 'default') => {
@@ -16,9 +16,9 @@ export default async function getModProfile() {
             managedGame,
         );
 
-        let profileFileName = `${profileName}.txt`;
+        const profileFileName = `${profileName}.txt`;
         const profileFilePath = path.join(modProfilePath, profileFileName);
-        const modFiles = await retrieveModFiles();
+        const modFiles = await retrieveModsMetaInformation();
         if (!fs.existsSync(profileFilePath)) {
             mkdripSync(modProfilePath);
 
@@ -26,43 +26,34 @@ export default async function getModProfile() {
                 return { id: mf.id, active: true };
             });
             fs.writeFileSync(
-                path.join(modProfilePath, profileFileName),
+                profileFilePath,
                 JSON.stringify(defaultProfileData),
             );
 
             return defaultProfileData;
         } else {
-            try {
-                const loadProfileDataRaw = fs.readFileSync(
-                    profileFilePath,
-                    'utf-8',
-                );
-                const loadProfileData = JSON.parse(loadProfileDataRaw);
-                const loadProfileDataResolved = [];
-                let rewriteLoadOrder = false;
-                for (let lpdi = 0; lpdi < loadProfileData.length; lpdi++) {
-                    const row = loadProfileData[lpdi];
-                    if (modFiles.findIndex((v) => v.id === row.id) !== -1) {
-                        loadProfileDataResolved.push(row);
-                        rewriteLoadOrder = true;
-                    }
+            const loadProfileDataRaw = fs.readFileSync(
+                profileFilePath,
+                'utf-8',
+            );
+            const loadProfileData = JSON.parse(loadProfileDataRaw);
+            const loadProfileDataResolved = [];
+            let rewriteLoadOrder = false;
+            for (let lpdi = 0; lpdi < loadProfileData.length; lpdi++) {
+                const row = loadProfileData[lpdi];
+                if (modFiles.findIndex((v) => v.id === row.id) !== -1) {
+                    loadProfileDataResolved.push(row);
+                    rewriteLoadOrder = true;
                 }
+            }
 
-                if (rewriteLoadOrder) {
-                    fs.writeFileSync(
-                        path.join(modProfilePath, profileFileName),
-                        JSON.stringify(loadProfileDataResolved),
-                    );
-                }
-                return loadProfileDataResolved;
-            } catch (e) {
-                console.warn(e);
-                dialog.showErrorBox(
-                    'Mod Profile File Corrupt',
-                    'App could not read mod profile file. You can manually delete the file at: ' +
-                        profileFilePath,
+            if (rewriteLoadOrder) {
+                fs.writeFileSync(
+                    profileFilePath,
+                    JSON.stringify(loadProfileDataResolved),
                 );
             }
+            return loadProfileDataResolved;
         }
     });
 }
