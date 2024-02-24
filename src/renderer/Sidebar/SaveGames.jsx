@@ -19,7 +19,6 @@ import { observer } from 'mobx-react';
 import { EyeIcon, TrashIcon } from '@heroicons/react/24/solid';
 import { VerticalDotsIcon } from '../Icons';
 import saveGameFiles from '../../store/saveGameFiles';
-import settings from '../../store/settings';
 import { readableFileSize } from '../../helpers/util';
 
 const columns = [
@@ -31,7 +30,7 @@ const columns = [
 
 function SaveGames() {
     useEffect(() => {
-        saveGameFiles.getFiles(settings.managedGame);
+        saveGameFiles.getFiles();
     }, []);
 
     const saveGameFilesData = toJS(saveGameFiles);

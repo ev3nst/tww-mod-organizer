@@ -12,26 +12,25 @@ import {
     DropdownMenu,
     DropdownItem,
     Link,
-    Modal,
-    ModalContent,
-    ModalHeader,
-    ModalBody,
-    ModalFooter,
     Spinner,
     Image,
 } from '@nextui-org/react';
 import { observer } from 'mobx-react';
-import { runInAction, toJS } from 'mobx';
+import { toJS } from 'mobx';
 import { EyeIcon, FolderIcon, TrashIcon } from '@heroicons/react/24/solid';
 import { VerticalDotsIcon } from '../Icons';
 import modFiles from '../../store/modFiles';
 import steamLogo from '../../../assets/steam-logo.png';
 import nexusLogo from '../../../assets/nexus-logo.png';
 import dbKeys from '../../main/db/keys';
+import { capitalize } from '../../helpers/util';
+import DeleteModModal from './DeleteModModal';
+import ModOrdering from './ModOrdering';
 
 const columns = [
     { name: '#', uid: 'order', sortable: true },
     { name: 'TITLE', uid: 'title', sortable: true },
+    { name: 'CATEGORIES', uid: 'categories', sortable: false },
     { name: 'CONFLICT', uid: 'conflict', sortable: false },
     { name: 'VERSION', uid: 'version', sortable: false },
     { name: 'ACTIONS', uid: 'actions', sortable: false },
@@ -42,11 +41,10 @@ function SaveGames() {
         modFiles.getFiles();
     }, []);
 
-    const [deleteModConfirm, setDeleteModConfirm] = useState({
+    const [showDeleteModModal, setShowDeleteModModal] = useState({
         isOpen: false,
         selectedModRow: null,
     });
-
     const [selectedKeys, setSelectedKeys] = useState(new Set([]));
     const [sortDescriptor, setSortDescriptor] = useState({
         column: 'date',
@@ -77,16 +75,37 @@ function SaveGames() {
     };
 
     const renderCell = useCallback((row, columnKey) => {
-        const cellValue = row[columnKey];
         switch (columnKey) {
+            case 'order':
+                return typeof modFiles.ordering !== 'undefined' &&
+                    typeof modFiles.ordering[row.id] !== 'undefined'
+                    ? modFiles.ordering[row.id]
+                    : '';
             case 'title':
                 return (
                     <div className="flex gap-2">
                         {renderModIcon(row)}
 
-                        <p>{cellValue}</p>
+                        <p className="truncate ">{row.title}</p>
                     </div>
                 );
+            case 'categories':
+                if (
+                    typeof row.categories !== 'undefined' &&
+                    Array.isArray(row.categories)
+                ) {
+                    return (
+                        <>
+                            {row.categories.map((category) => (
+                                <p key={`mod_list_${row.title}_categories`}>
+                                    {capitalize(category)}
+                                </p>
+                            ))}
+                        </>
+                    );
+                }
+
+                return '';
             case 'version':
                 if (typeof row.steamId !== 'undefined') {
                     return (
@@ -98,7 +117,7 @@ function SaveGames() {
                     );
                 }
 
-                return cellValue;
+                return row.version;
 
             case 'actions':
                 return (
@@ -172,7 +191,7 @@ function SaveGames() {
 
                                 <DropdownItem
                                     onClick={() => {
-                                        setDeleteModConfirm({
+                                        setShowDeleteModModal({
                                             isOpen: true,
                                             selectedModRow: row,
                                         });
@@ -190,7 +209,7 @@ function SaveGames() {
                     </div>
                 );
             default:
-                return cellValue;
+                return row[columnKey];
         }
     }, []);
 
@@ -219,7 +238,8 @@ function SaveGames() {
     );
 
     return (
-        <>
+        <div className="flex">
+            <ModOrdering />
             <Table
                 isCompact
                 removeWrapper
@@ -271,84 +291,15 @@ function SaveGames() {
                     )}
                 </TableBody>
             </Table>
-            <Modal isOpen={deleteModConfirm.isOpen} hideCloseButton>
-                <ModalContent>
-                    {() => (
-                        <>
-                            <ModalHeader className="flex flex-col gap-1">
-                                Are you sure to unsubscribe/delete selected mod
-                                ?
-                            </ModalHeader>
-                            <ModalBody>
-                                <p>
-                                    If selected mod is from steam workshop then
-                                    the mod will be unsubscribed otherwise mod
-                                    files will be moved to trash.
-                                </p>
-                            </ModalBody>
-                            <ModalFooter>
-                                <Button
-                                    color="danger"
-                                    onPress={async () => {
-                                        console.log(
-                                            deleteModConfirm,
-                                            'deleteModConfirm',
-                                        );
-                                        if (
-                                            typeof deleteModConfirm
-                                                .selectedModRow.steamId !==
-                                            'undefined'
-                                        ) {
-                                            await window.electronAPI.steamUnsubscribe(
-                                                deleteModConfirm.selectedModRow
-                                                    .steamId,
-                                            );
-                                        } else {
-                                            await window.electronAPI.deleteMod(
-                                                deleteModConfirm.selectedModRow
-                                                    .title,
-                                            );
-                                        }
-
-                                        const newModFiles =
-                                            modFiles.files.filter(
-                                                (mf) =>
-                                                    mf.id !==
-                                                    deleteModConfirm
-                                                        .selectedModRow.id,
-                                            );
-
-                                        runInAction(() => {
-                                            modFiles.files = newModFiles;
-                                        });
-
-                                        setDeleteModConfirm({
-                                            ...deleteModConfirm,
-                                            isOpen: false,
-                                            selectedModRow: null,
-                                        });
-                                    }}
-                                >
-                                    Yes
-                                </Button>
-                                <Button
-                                    color="primary"
-                                    onPress={() => {
-                                        setDeleteModConfirm({
-                                            ...deleteModConfirm,
-                                            isOpen: false,
-                                            selectedModRow: null,
-                                        });
-                                    }}
-                                >
-                                    Cancel
-                                </Button>
-                            </ModalFooter>
-                        </>
-                    )}
-                </ModalContent>
-            </Modal>
-        </>
+            {showDeleteModModal.isOpen && (
+                <DeleteModModal
+                    selectedModRow={showDeleteModModal.selectedModRow}
+                    onModalStateChange={(newState) => {
+                        setShowDeleteModModal(newState);
+                    }}
+                />
+            )}
+        </div>
     );
 }
 

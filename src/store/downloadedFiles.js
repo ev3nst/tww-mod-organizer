@@ -8,12 +8,11 @@ class DownloadedFiles {
         makeAutoObservable(this);
     }
 
-    async getFiles(managedGameFallback) {
+    async getFiles() {
         runInAction(() => {
             this.loading = true;
         });
-        const archives =
-            await window.electronAPI.getDownloadedArchives(managedGameFallback);
+        const archives = await window.electronAPI.getDownloadedArchives();
         runInAction(() => {
             if (
                 typeof archives !== 'undefined' &&

@@ -2,6 +2,7 @@ import { makeAutoObservable, runInAction } from 'mobx';
 
 class ModFiles {
     files = [];
+    ordering = {};
     loading = false;
 
     constructor() {
@@ -25,6 +26,14 @@ class ModFiles {
 
             this.loading = false;
         });
+    }
+
+    async getOrdering() {
+        const ordering = await window.electronAPI.getModOrdering();
+    }
+
+    async saveOrdering() {
+        console.log('save ordering');
     }
 }
 

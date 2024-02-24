@@ -8,12 +8,11 @@ class SaveGameFiles {
         makeAutoObservable(this);
     }
 
-    async getFiles(managedGameFallback) {
+    async getFiles() {
         runInAction(() => {
             this.loading = true;
         });
-        const saveFiles =
-            await window.electronAPI.getSaveFiles(managedGameFallback);
+        const saveFiles = await window.electronAPI.getSaveFiles();
         runInAction(() => {
             if (
                 typeof saveFiles !== 'undefined' &&

@@ -4,9 +4,9 @@ import fs from 'fs';
 import { getModInstallationPath } from '../tools/resolveManagedPaths';
 
 export default function gameDeleteMod() {
-    ipcMain.handle('game:deleteMod', async (_e, title) => {
+    ipcMain.handle('game:deleteMod', async (_e, modName) => {
         const modInstallationFolder = getModInstallationPath();
-        const modPath = path.join(modInstallationFolder, title);
+        const modPath = path.join(modInstallationFolder, modName);
         if (fs.existsSync(modPath)) {
             await shell.trashItem(modPath);
         }

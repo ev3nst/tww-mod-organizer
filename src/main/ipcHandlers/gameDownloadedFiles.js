@@ -9,13 +9,9 @@ import dbKeys from '../db/keys';
 import supportedGames from '../../store/supportedGames';
 
 export default function gameDownloadedFiles() {
-    ipcMain.handle('game:downloadedFiles', (managedGameFallback) => {
+    ipcMain.handle('game:downloadedFiles', () => {
+        const managedGame = db.get(dbKeys.MANAGED_GAME);
         let downloadFiles = [];
-        let managedGame = db.get(dbKeys.MANAGED_GAME);
-        if (!managedGame) {
-            managedGame = managedGameFallback;
-        }
-
         let modDownloadPath = db.get(dbKeys.MOD_DOWNLOAD_FOLDER);
         if (
             typeof modDownloadPath === 'undefined' ||

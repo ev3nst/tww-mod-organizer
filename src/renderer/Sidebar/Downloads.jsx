@@ -19,7 +19,6 @@ import { observer } from 'mobx-react';
 import { EyeIcon, TrashIcon } from '@heroicons/react/24/solid';
 import { VerticalDotsIcon } from '../Icons';
 import downloadedFiles from '../../store/downloadedFiles';
-import settings from '../../store/settings';
 import { readableFileSize } from '../../helpers/util';
 
 const columns = [
@@ -31,7 +30,7 @@ const columns = [
 
 function Downloads() {
     useEffect(() => {
-        downloadedFiles.getFiles(settings.managedGame);
+        downloadedFiles.getFiles();
     }, []);
 
     const downloadedFilesData = toJS(downloadedFiles);

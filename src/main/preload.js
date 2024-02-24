@@ -2,25 +2,44 @@ import { contextBridge, ipcRenderer } from 'electron';
 
 contextBridge.exposeInMainWorld('electronAPI', {
     nexusInitAuth: () => ipcRenderer.invoke('nexus:init_auth'),
-    checkExistingMod: (arg) => ipcRenderer.invoke('game:checkExistingMod', arg),
-    installMod: (...arg) => ipcRenderer.invoke('game:installMod', ...arg),
-    getModFiles: () => ipcRenderer.invoke('game:modFiles'),
-    getSaveFiles: (arg) => ipcRenderer.invoke('game:saveFiles', arg),
-    deleteSaveFiles: (arg) => ipcRenderer.invoke('game:deleteSaveFiles', arg),
-    steamUnsubscribe: (arg) =>
-        ipcRenderer.invoke('steam:unsubscribe', arg),
-    deleteMod: (arg) => ipcRenderer.invoke('game:deleteMod', arg),
-    getDownloadedArchives: (arg) =>
-        ipcRenderer.invoke('game:downloadedFiles', arg),
 
-    dbGet: (arg) => ipcRenderer.invoke('db:get', arg),
-    dbSet: (...arg) => ipcRenderer.invoke('db:set', ...arg),
+    checkExistingMod: (modName) =>
+        ipcRenderer.invoke('game:checkExistingMod', modName),
+
+    installMod: (modName, zipPath, sameNameAction) =>
+        ipcRenderer.invoke('game:installMod', modName, zipPath, sameNameAction),
+
+    getModFiles: () => ipcRenderer.invoke('game:modFiles'),
+
+    getSaveFiles: () => ipcRenderer.invoke('game:saveFiles'),
+
+    deleteSaveFiles: (saveFilePaths) =>
+        ipcRenderer.invoke('game:deleteSaveFiles', saveFilePaths),
+
+    steamUnsubscribe: (workshopItemId) =>
+        ipcRenderer.invoke('steam:unsubscribe', workshopItemId),
+
+    deleteMod: (modName) => ipcRenderer.invoke('game:deleteMod', modName),
+
+    getDownloadedArchives: () => ipcRenderer.invoke('game:downloadedFiles'),
+
+    dbGet: (key) => ipcRenderer.invoke('db:get', key),
+
+    dbSet: (key, value) => ipcRenderer.invoke('db:set', key, value),
+
     pathDirname: (arg) => ipcRenderer.invoke('path:dirname', arg),
-    pathJoin: (...args) => ipcRenderer.invoke('path:join', ...args),
+
+    pathJoin: (...pathStrings) =>
+        ipcRenderer.invoke('path:join', ...pathStrings),
+
     appDataPath: () => ipcRenderer.invoke('electron:appData'),
-    openExternalLink: (arg) => ipcRenderer.invoke('shell:externalLink', arg),
-    showItemInFolder: (arg) =>
-        ipcRenderer.invoke('shell:showItemInFolder', arg),
-    fsExists: (arg) => ipcRenderer.invoke('fs:exists', arg),
+
+    openExternalLink: (url) => ipcRenderer.invoke('shell:externalLink', url),
+
+    showItemInFolder: (pathString) =>
+        ipcRenderer.invoke('shell:showItemInFolder', pathString),
+
+    fsExists: (pathString) => ipcRenderer.invoke('fs:exists', pathString),
+
     exit: () => ipcRenderer.invoke('electron:exit'),
 });
