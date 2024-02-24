@@ -8,7 +8,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getSaveFiles: (arg) => ipcRenderer.invoke('game:saveFiles', arg),
     deleteSaveFiles: (arg) => ipcRenderer.invoke('game:deleteSaveFiles', arg),
     steamUnsubscribe: (arg) =>
-        ipcRenderer.invoke('steam:steamUnsubscribe', arg),
+        ipcRenderer.invoke('steam:unsubscribe', arg),
     deleteMod: (arg) => ipcRenderer.invoke('game:deleteMod', arg),
     getDownloadedArchives: (arg) =>
         ipcRenderer.invoke('game:downloadedFiles', arg),

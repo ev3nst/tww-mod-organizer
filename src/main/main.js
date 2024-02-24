@@ -11,8 +11,9 @@ import { app, BrowserWindow, shell } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import MenuBuilder from './menu';
-import { resolveSteamPaths } from './steam';
+import { resolveSteamPaths } from './tools/steam';
 import ipcHandlers from './ipcHandlers';
+import { resolveManagedPaths } from './tools/resolveManagedPaths';
 
 function resolveHtmlPath(htmlFileName) {
     if (process.env.NODE_ENV === 'development') {
@@ -115,6 +116,8 @@ app.on('window-all-closed', () => {
 app.on('ready', function () {
     // Steam related
     resolveSteamPaths();
+    resolveManagedPaths();
+
     ipcHandlers();
     createWindow();
 });

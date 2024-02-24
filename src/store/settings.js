@@ -1,5 +1,5 @@
 import { makeAutoObservable, reaction, runInAction, toJS } from 'mobx';
-import dbKeys from '../main/dbKeys';
+import dbKeys from '../main/db/keys';
 
 class Settings {
     managedGame;

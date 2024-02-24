@@ -4,9 +4,9 @@ import fs from 'fs';
 import path from 'path';
 import steamworks from 'steamworks.js';
 
-import db from './db';
-import dbKeys from './dbKeys';
-import { supportedGames } from '../store/constants';
+import db from '../db';
+import dbKeys from '../db/keys';
+import supportedGames from '../../store/supportedGames';
 
 export function resolveSteamPaths() {
     let steamInstallPath = null;

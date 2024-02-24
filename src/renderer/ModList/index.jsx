@@ -23,11 +23,11 @@ import {
 import { observer } from 'mobx-react';
 import { runInAction, toJS } from 'mobx';
 import { EyeIcon, FolderIcon, TrashIcon } from '@heroicons/react/24/solid';
-import { VerticalDotsIcon } from './Icons';
-import modFiles from '../store/modFiles';
-import steamLogo from '../../assets/steam-logo.png';
-import nexusLogo from '../../assets/nexus-logo.png';
-import dbKeys from '../main/dbKeys';
+import { VerticalDotsIcon } from '../Icons';
+import modFiles from '../../store/modFiles';
+import steamLogo from '../../../assets/steam-logo.png';
+import nexusLogo from '../../../assets/nexus-logo.png';
+import dbKeys from '../../main/db/keys';
 
 const columns = [
     { name: '#', uid: 'order', sortable: true },
