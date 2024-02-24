@@ -1,12 +1,21 @@
-import { makeAutoObservable, runInAction } from 'mobx';
+import { makeAutoObservable, reaction, runInAction, toJS } from 'mobx';
 
 class ModFiles {
     files = [];
-    ordering = {};
+    ordering = [];
+    tempOrdering = [];
+    draggingId = null;
     loading = false;
 
     constructor() {
         makeAutoObservable(this);
+
+        reaction(
+            () => this.ordering,
+            () => {
+                this.saveOrdering();
+            },
+        );
     }
 
     async getFiles() {
@@ -29,11 +38,17 @@ class ModFiles {
     }
 
     async getOrdering() {
-        const ordering = await window.electronAPI.getModOrdering();
+        const ordering = await window.electronAPI.getModOrder();
+
+        runInAction(() => {
+            this.ordering = ordering;
+            this.tempOrdering = ordering;
+            this.loading = false;
+        });
     }
 
     async saveOrdering() {
-        console.log('save ordering');
+        await window.electronAPI.saveModOrder(toJS(this.ordering));
     }
 }
 

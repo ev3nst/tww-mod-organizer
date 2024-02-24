@@ -11,6 +11,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
     getModFiles: () => ipcRenderer.invoke('game:modFiles'),
 
+    saveModOrder: (newOrder, profileName) =>
+        ipcRenderer.invoke('game:saveModOrder', newOrder, profileName),
+
+    getModOrder: (profileName) =>
+        ipcRenderer.invoke('game:modOrder', profileName),
+
     getSaveFiles: () => ipcRenderer.invoke('game:saveFiles'),
 
     deleteSaveFiles: (saveFilePaths) =>

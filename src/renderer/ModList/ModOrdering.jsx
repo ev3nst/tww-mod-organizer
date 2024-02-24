@@ -1,16 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Chip } from '@nextui-org/react';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { EllipsisHorizontalIcon } from '@heroicons/react/24/solid';
-
-const initial = Array.from({ length: 10 }, (v, k) => k).map((k) => {
-    const custom = {
-        id: `id-${k}`,
-        content: `${k}`,
-    };
-
-    return custom;
-});
+import modFiles from '../../store/modFiles';
+import { runInAction, toJS } from 'mobx';
+import { observer } from 'mobx-react';
 
 const reorder = (list, startIndex, endIndex) => {
     const result = Array.from(list);
@@ -20,9 +14,9 @@ const reorder = (list, startIndex, endIndex) => {
     return result;
 };
 
-function Quote({ quote, index }) {
+function ModOrder({ modIndex, index }) {
     return (
-        <Draggable draggableId={quote.id} index={index}>
+        <Draggable draggableId={modIndex} index={index}>
             {(provided) => (
                 <div
                     ref={provided.innerRef}
@@ -30,7 +24,7 @@ function Quote({ quote, index }) {
                     {...provided.dragHandleProps}
                 >
                     <Chip
-                        key={quote.id}
+                        key={modIndex}
                         size="lg"
                         style={{
                             height: '30px',
@@ -46,16 +40,28 @@ function Quote({ quote, index }) {
     );
 }
 
-const QuoteList = React.memo(function QuoteList({ quotes }) {
-    return quotes.map((quote, index) => (
-        <Quote quote={quote} index={index} key={quote.id} />
+const ModOrderList = React.memo(function ModOrderList({ mods }) {
+    return mods.map((modIndex, index) => (
+        <ModOrder modIndex={modIndex} index={index} key={modIndex} />
     ));
 });
 
 function ModOrdering() {
-    const [state, setState] = useState({ quotes: initial });
+    const modFilesData = toJS(modFiles);
+    const modOrderingData = modFilesData.tempOrdering;
+    const [modOrderingState, setModOrderingState] = useState([]);
+
+    useEffect(() => {
+        if (modOrderingState.length === 0) {
+            setModOrderingState(modFilesData.tempOrdering);
+        }
+    }, [modFilesData.tempOrdering, modOrderingData, modOrderingState.length]);
 
     function onDragEnd(result) {
+        runInAction(() => {
+            modFiles.draggingId = null;
+        });
+
         if (!result.destination) {
             return;
         }
@@ -64,37 +70,76 @@ function ModOrdering() {
             return;
         }
 
-        const quotes = reorder(
-            state.quotes,
+        const mods = reorder(
+            modOrderingState,
             result.source.index,
             result.destination.index,
         );
 
-        setState({ quotes });
+        setModOrderingState(mods);
+        const fromIndex = result.source.index;
+        const toIndex = result.destination.index;
+        const newOrderData = [...modOrderingData];
+        const element = newOrderData.splice(fromIndex, 1)[0];
+        newOrderData.splice(toIndex, 0, element);
+        runInAction(() => {
+            modFiles.ordering = newOrderData;
+            modFiles.tempOrdering = newOrderData;
+        });
     }
 
-    return (
-        <div className="mt-11 px-4">
-            <DragDropContext
-                onDragEnd={onDragEnd}
-                onDragUpdate={(update) => {
-                    console.log(update, 'update?');
-                }}
-            >
-                <Droppable droppableId="list">
-                    {(provided) => (
-                        <div
-                            ref={provided.innerRef}
-                            {...provided.droppableProps}
-                        >
-                            <QuoteList quotes={state.quotes} />
-                            {provided.placeholder}
-                        </div>
-                    )}
-                </Droppable>
-            </DragDropContext>
-        </div>
-    );
+    if (modOrderingState.length > 0) {
+        return (
+            <div className="mt-11 px-4">
+                <DragDropContext
+                    onDragStart={(dragEvent) => {
+                        runInAction(() => {
+                            modFiles.draggingId = dragEvent.draggableId;
+                        });
+                    }}
+                    onDragEnd={onDragEnd}
+                    onDragUpdate={(update) => {
+                        if (
+                            update.source === null ||
+                            update.destination === null
+                        ) {
+                            return;
+                        }
+
+                        const fromIndex = update.source.index;
+                        const toIndex = update.destination.index;
+                        const newOrderData = [...modOrderingData];
+                        const element = newOrderData.splice(fromIndex, 1)[0];
+                        newOrderData.splice(toIndex, 0, element);
+                        const output = newOrderData.map(
+                            (id) =>
+                                modFilesData.files.filter(
+                                    (mf) => mf.id === id,
+                                )[0],
+                        );
+                        runInAction(() => {
+                            modFiles.files = output;
+                            modFiles.ordering = newOrderData;
+                        });
+                    }}
+                >
+                    <Droppable droppableId="list">
+                        {(provided) => (
+                            <div
+                                ref={provided.innerRef}
+                                {...provided.droppableProps}
+                            >
+                                <ModOrderList mods={modOrderingState} />
+                                {provided.placeholder}
+                            </div>
+                        )}
+                    </Droppable>
+                </DragDropContext>
+            </div>
+        );
+    }
+
+    return <></>;
 }
 
-export default ModOrdering;
+export default observer(ModOrdering);
