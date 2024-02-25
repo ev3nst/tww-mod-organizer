@@ -21,6 +21,7 @@ import nexusInitAuth from './nexusInitAuth';
 import pathDirname from './pathDirname';
 import showItemInFolder from './showItemInFolder';
 import steamUnsubscribe from './steamUnsubscribe';
+import getModConflicts from './getModConflicts';
 
 BigInt.prototype.toJSON = function () {
     return this.toString();
@@ -50,4 +51,5 @@ export default function ipcHandlers() {
     pathDirname();
     showItemInFolder();
     steamUnsubscribe();
+    getModConflicts();
 }

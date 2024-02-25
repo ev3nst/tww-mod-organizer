@@ -40,6 +40,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
     getDownloadedArchives: () => ipcRenderer.invoke('getDownloadedArchives'),
 
+    getModConflicts: () => ipcRenderer.invoke('getModConflicts'),
+
     dbGet: (key) => ipcRenderer.invoke('dbGet', key),
 
     dbSet: (key, value) => ipcRenderer.invoke('dbSet', key, value),

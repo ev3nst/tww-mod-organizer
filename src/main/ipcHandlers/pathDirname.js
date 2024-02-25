@@ -2,7 +2,7 @@ import { ipcMain } from 'electron';
 import path from 'path';
 
 export default function pathDirname() {
-    ipcMain.handle('pathDirname', (_e, ...pathStrings) => {
-        return path.join(pathStrings);
+    ipcMain.handle('pathDirname', (_e, pathString) => {
+        return path.dirname(pathString);
     });
 }
