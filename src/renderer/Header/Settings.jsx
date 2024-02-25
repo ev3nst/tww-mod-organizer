@@ -131,10 +131,6 @@ const Settings = () => {
                                             String(event.target.value).length >
                                                 0
                                         ) {
-                                            console.log(
-                                                event.target.files[0].path,
-                                                'event.target.files[0].path',
-                                            );
                                             const directoryPath =
                                                 await window.electronAPI.pathDirname(
                                                     event.target.files[0].path,
@@ -213,10 +209,6 @@ const Settings = () => {
                                             String(event.target.value).length >
                                                 0
                                         ) {
-                                            console.log(
-                                                event.target.files[0].path,
-                                                'event.target.files[0].path',
-                                            );
                                             const directoryPath =
                                                 await window.electronAPI.pathDirname(
                                                     event.target.files[0].path,

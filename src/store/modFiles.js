@@ -1,14 +1,16 @@
 import { makeAutoObservable, runInAction, toJS } from 'mobx';
 import dbKeys from '../main/db/keys';
+import toast from 'react-hot-toast';
 
 class ModFiles {
     files = [];
+    filesLoading = false;
     modProfile = 'default';
+    modProfileLoading = false;
     availableModProfiles = [];
     modProfileData = [];
     tempModProfileData = [];
     draggingId = null;
-    loading = false;
 
     constructor() {
         makeAutoObservable(this);
@@ -16,8 +18,9 @@ class ModFiles {
 
     async getFiles() {
         runInAction(() => {
-            this.loading = true;
+            this.filesLoading = true;
         });
+
         const modFiles = await window.electronAPI.getModsMetaInformation();
         runInAction(() => {
             if (
@@ -29,26 +32,38 @@ class ModFiles {
                 this.files = modFiles;
             }
 
-            this.loading = false;
+            this.filesLoading = false;
         });
     }
 
     async getModProfile() {
+        runInAction(() => {
+            this.modProfileLoading = true;
+        });
+
         const currentProfile = await window.electronAPI.dbGet(
             dbKeys.MOD_PROFILE,
         );
         const modProfileData = await window.electronAPI.getModProfile(
-            currentProfile || this.modProfile,
+            currentProfile || this.modProfile || 'default',
         );
         const availableModProfiles =
             await window.electronAPI.getAvailableModProfiles();
 
+        if (typeof modProfileData !== 'undefined') {
+            runInAction(() => {
+                this.modProfileData = modProfileData;
+                this.tempModProfileData = modProfileData;
+                this.modProfile = currentProfile || 'default';
+                this.availableModProfiles = availableModProfiles || [];
+                this.loading = false;
+            });
+        } else {
+            toast.error('There was some error retrieving profile data.');
+        }
+
         runInAction(() => {
-            this.modProfileData = modProfileData;
-            this.tempModProfileData = modProfileData;
-            this.modProfile = currentProfile || 'default';
-            this.availableModProfiles = availableModProfiles || [];
-            this.loading = false;
+            this.modProfileLoading = false;
         });
     }
 

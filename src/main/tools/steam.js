@@ -2,11 +2,12 @@ import { app } from 'electron';
 import winreg from 'winreg';
 import fs from 'fs';
 import path from 'path';
-import steamworks from 'steamworks.js';
 
 import db from '../db';
 import dbKeys from '../db/keys';
+import steamClient from './steamClient';
 import supportedGames from '../../store/supportedGames';
+import { arrayEquals } from '../../helpers/util';
 
 export function resolveSteamPaths() {
     let steamInstallPath = null;
@@ -128,32 +129,35 @@ export async function getWorkshopMods() {
 
     const dbSubscribedModIds = db.get(dbKeys.STEAM_WORKSHOP_IDS);
     const dbSubscribedModDetails = db.get(dbKeys.STEAM_WORKSHOP_DETAILS);
+    const subscribedModIds = await steamClient.getSubscribedItems(
+        managedGameDetails.steamId,
+    );
 
-    const client = steamworks.init(managedGameDetails.steamId);
-    const subscribedModIds = client.workshop.getSubscribedItems();
     if (
         typeof dbSubscribedModIds === 'undefined' ||
         typeof dbSubscribedModIds[managedGame] === 'undefined' ||
         typeof dbSubscribedModDetails === 'undefined' ||
         typeof dbSubscribedModDetails[managedGame] === 'undefined' ||
-        subscribedModIds.sort().toString() !==
-            dbSubscribedModIds[managedGame].sort().toString()
+        !arrayEquals(subscribedModIds, dbSubscribedModIds[managedGame])
     ) {
         db.set(dbKeys.STEAM_WORKSHOP_IDS, {
             ...dbSubscribedModIds,
             [managedGame]: subscribedModIds,
         });
 
-        const subscribedMods = await client.workshop.getItems(subscribedModIds);
+        const subscribedMods = await steamClient.getItems(
+            managedGameDetails.steamId,
+            subscribedModIds,
+        );
         const subscribedModDetails = subscribedMods.map((sm) => {
             return {
-                id: sm.publishedFileId,
+                id: String(sm.publishedFileId),
                 title: sm.title,
                 description: sm.description,
-                steamId: sm.publishedFileId,
+                steamId: String(sm.publishedFileId),
                 previewImage: sm.previewUrl,
                 categories: sm.tags.filter((tag) => tag !== 'mod'),
-                modPage: `https://steamcommunity.com/sharedfiles/filedetails/?id=${sm.publishedFileId}`,
+                modPage: `https://steamcommunity.com/sharedfiles/filedetails/?id=${String(sm.publishedFileId)}`,
                 createdAt: sm.timeCreated
                     ? new Date(sm.timeCreated * 1000)
                     : null,
@@ -167,7 +171,8 @@ export async function getWorkshopMods() {
             ...dbSubscribedModDetails,
             [managedGame]: subscribedModDetails,
         });
-        return subscribedMods;
+
+        return subscribedModDetails;
     }
 
     return dbSubscribedModDetails[managedGame];
@@ -179,6 +184,8 @@ export async function unsubscribeFromWorkshop(workshopItemId) {
         (sgf) => sgf.slug === managedGame,
     )[0];
 
-    const client = steamworks.init(managedGameDetails.steamId);
-    return await client.workshop.unsubscribe(BigInt(workshopItemId));
+    return await steamClient.unsubscribe(
+        managedGameDetails.steamId,
+        BigInt(workshopItemId),
+    );
 }

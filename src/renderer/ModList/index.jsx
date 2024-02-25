@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
     Table,
     TableHeader,
@@ -31,18 +31,41 @@ const initialSort = {
     direction: 'ascending',
 };
 
+async function initData() {
+    await modFiles.getFiles();
+    await modFiles.getModProfile();
+}
+
 function ModList() {
     const modFilesData = toJS(modFiles);
+
+    useEffect(() => {
+        initData();
+    }, []);
+
     const selectedKeys = new Set([]);
-    for (let macti = 0; macti < modFilesData.modProfileData.length; macti++) {
-        const modProfData = modFilesData.modProfileData[macti];
-        if (modProfData.active === true) {
-            const indx = modFilesData.files.findIndex(
-                (fi) => fi.id === modProfData.id,
-            );
-            selectedKeys.add(modFilesData.files[indx].title);
+    if (
+        typeof modFilesData.files !== 'undefined' &&
+        modFilesData.files !== null &&
+        modFilesData.files.length > 0
+    ) {
+        for (
+            let macti = 0;
+            macti < modFilesData.modProfileData.length;
+            macti++
+        ) {
+            const modProfData = modFilesData.modProfileData[macti];
+            if (modProfData.active === true) {
+                const indx = modFilesData.files.findIndex(
+                    (fi) => fi.id === modProfData.id,
+                );
+                if (typeof modFilesData.files[indx] !== 'undefined') {
+                    selectedKeys.add(modFilesData.files[indx].title);
+                }
+            }
         }
     }
+
     const [showDeleteModModal, setShowDeleteModModal] = useState({
         isOpen: false,
         selectedModRow: null,
@@ -63,6 +86,10 @@ function ModList() {
         const cmp = first < second ? -1 : first > second ? 0 : 1;
         return initialSort.direction === 'descending' ? -cmp : cmp;
     });
+
+    if (modFilesData.filesLoading || modFilesData.modProfileLoading) {
+        return <Spinner />;
+    }
 
     return (
         <>
@@ -120,16 +147,7 @@ function ModList() {
                             </TableColumn>
                         )}
                     </TableHeader>
-                    <TableBody
-                        emptyContent={
-                            modFilesData.loading === true ? (
-                                <Spinner />
-                            ) : (
-                                'No mods found'
-                            )
-                        }
-                        items={items}
-                    >
+                    <TableBody emptyContent="No mods found" items={items}>
                         {(item) => {
                             return (
                                 <TableRow
@@ -154,6 +172,9 @@ function ModList() {
                                                         deleteModModalState,
                                                     );
                                                 }}
+                                                modProfileData={
+                                                    modFilesData.modProfileData
+                                                }
                                             />
                                         </TableCell>
                                     )}

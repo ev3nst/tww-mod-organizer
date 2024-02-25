@@ -123,9 +123,9 @@ const Header = () => {
                             color="foreground"
                             onClick={async () => {
                                 await modFiles.getFiles();
+                                await modFiles.getModProfile();
                                 await saveGameFiles.getFiles();
                                 await downloadedFiles.getFiles();
-                                await modFiles.getModProfile();
                             }}
                         >
                             <ArrowPathIcon className="h-5 w-5 text-green-500" />

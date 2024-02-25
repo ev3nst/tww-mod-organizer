@@ -6,23 +6,24 @@ import {
     DropdownItem,
     Link,
 } from '@nextui-org/react';
-import { observer } from 'mobx-react';
 import { EyeIcon, TrashIcon } from '@heroicons/react/24/solid';
 import { VerticalDotsIcon } from '../Icons';
 import ModListCellIcon from './ModListCellIcon';
-import modFiles from '../../store/modFiles';
 import dbKeys from '../../main/db/keys';
 import { capitalize } from '../../helpers/util';
 
-const ModListCell = ({ row, columnKey, onDeleteModalClick }) => {
+const ModListCell = ({
+    row,
+    columnKey,
+    onDeleteModalClick,
+    modProfileData,
+}) => {
     switch (columnKey) {
         case 'order':
-            if (typeof modFiles.modProfileData !== 'undefined') {
-                const modIndex = modFiles.modProfileData.findIndex(
-                    function (modData) {
-                        return modData.id === row.id;
-                    },
-                );
+            if (typeof modProfileData !== 'undefined') {
+                const modIndex = modProfileData.findIndex(function (modData) {
+                    return modData.id === row.id;
+                });
                 return <p className="text-center">{modIndex}</p>;
             }
 
@@ -158,4 +159,4 @@ const ModListCell = ({ row, columnKey, onDeleteModalClick }) => {
     }
 };
 
-export default observer(ModListCell);
+export default ModListCell;

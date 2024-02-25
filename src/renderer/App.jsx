@@ -9,7 +9,6 @@ import Header from './Header';
 import Sidebar from './Sidebar';
 import ModList from './ModList';
 import gameAssets from '../store/gameAssets';
-import modFiles from '../store/modFiles';
 
 import './App.css';
 
@@ -17,11 +16,6 @@ function App() {
     const managedGameIsNotEmpty =
         typeof settings.managedGame !== 'undefined' &&
         String(settings.managedGame).length !== 0;
-
-    if (managedGameIsNotEmpty) {
-        modFiles.getFiles();
-        modFiles.getModProfile();
-    }
 
     return (
         <NextUIProvider>
