@@ -5,6 +5,7 @@ import {
     DropdownMenu,
     DropdownItem,
     Link,
+    Image,
 } from '@nextui-org/react';
 import { ArrowRightIcon, EyeIcon, TrashIcon } from '@heroicons/react/24/solid';
 import { VerticalDotsIcon } from '../Icons';
@@ -32,8 +33,13 @@ const ModListCell = ({
         case 'title':
             return (
                 <div className="shrink-0 flex gap-2">
-                    <ModListCellIcon row={row} />
-                    <p>{row.title}</p>
+                    {row.previewImage ? (
+                        <Image src={row.previewImage} width={20} height={20} />
+                    ) : (
+                        <ModListCellIcon row={row} />
+                    )}
+
+                    <p className="truncate">{row.title}</p>
                 </div>
             );
         case 'categories':

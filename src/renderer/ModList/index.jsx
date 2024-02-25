@@ -149,7 +149,7 @@ function ModList() {
                                 className={
                                     column.uid === 'categories' ||
                                     column.uid === 'version'
-                                        ? 'hidden xl:table-cell'
+                                        ? 'hidden 2xl:table-cell'
                                         : ''
                                 }
                                 key={column.uid}
@@ -177,7 +177,7 @@ function ModList() {
                                 >
                                     {(columnKey) => (
                                         <TableCell
-                                            className={`subpixel-antialiased text-xs ${columnKey === 'categories' || columnKey === 'version' ? 'hidden xl:table-cell' : ''}`}
+                                            className={`subpixel-antialiased text-xs ${columnKey === 'categories' || columnKey === 'version' ? 'hidden 2xl:table-cell' : ''}`}
                                         >
                                             <ModListCell
                                                 row={item}

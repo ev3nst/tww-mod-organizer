@@ -228,7 +228,7 @@ function SaveGames() {
                         key={column.uid}
                         className={
                             column.uid === 'size' || column.uid === 'date'
-                                ? 'hidden xl:table-cell'
+                                ? 'hidden 2xl:table-cell'
                                 : ''
                         }
                         align={column.uid === 'actions' ? 'center' : 'start'}
@@ -243,7 +243,7 @@ function SaveGames() {
                     <TableRow key={item.name}>
                         {(columnKey) => (
                             <TableCell
-                                className={`subpixel-antialiased text-xs ${columnKey === 'size' || columnKey === 'date' ? 'hidden xl:table-cell' : ''}`}
+                                className={`subpixel-antialiased text-xs ${columnKey === 'size' || columnKey === 'date' ? 'hidden 2xl:table-cell' : ''}`}
                             >
                                 {renderCell(item, columnKey)}
                             </TableCell>
