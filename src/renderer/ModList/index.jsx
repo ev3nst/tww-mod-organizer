@@ -12,6 +12,7 @@ import { runInAction, toJS } from 'mobx';
 import { observer } from 'mobx-react';
 import modFiles from '../../store/modFiles';
 import DeleteModModal from './DeleteModModal';
+import ChangePriorityModal from './ChangePriorityModal';
 import ModProfiles from './ModProfiles';
 import ModOrdering from './ModOrdering';
 import ModListCell from './ModListCell';
@@ -71,7 +72,23 @@ function ModList() {
         selectedModRow: null,
     });
 
-    const items = modFilesData.files.slice().sort((a, b) => {
+    const [showChangePriorityModModalState, setShowChangePriorityModModal] =
+        useState({
+            isOpen: false,
+            selectedModRow: null,
+            fromIndex: null,
+        });
+
+    let items = modFilesData.files.slice();
+    if (modFilesData.searchFilter.length > 0) {
+        items = items.filter((mf) =>
+            mf.title
+                .toLowerCase()
+                .includes(modFilesData.searchFilter.toLowerCase()),
+        );
+    }
+
+    items = items.sort((a, b) => {
         let first = a[initialSort.column];
         let second = b[initialSort.column];
         if (initialSort.column === 'order') {
@@ -93,9 +110,9 @@ function ModList() {
 
     return (
         <>
-            <ModProfiles />
+            {modFilesData.searchFilter.length === 0 && <ModProfiles />}
             <div className="flex">
-                <ModOrdering />
+                {modFilesData.searchFilter.length === 0 && <ModOrdering />}
                 <Table
                     isCompact
                     removeWrapper
@@ -165,6 +182,9 @@ function ModList() {
                                             <ModListCell
                                                 row={item}
                                                 columnKey={columnKey}
+                                                modProfileData={
+                                                    modFilesData.modProfileData
+                                                }
                                                 onDeleteModalClick={(
                                                     deleteModModalState,
                                                 ) => {
@@ -172,9 +192,13 @@ function ModList() {
                                                         deleteModModalState,
                                                     );
                                                 }}
-                                                modProfileData={
-                                                    modFilesData.modProfileData
-                                                }
+                                                onChangePriorityModalClick={(
+                                                    changePriorityModModalState,
+                                                ) => {
+                                                    setShowChangePriorityModModal(
+                                                        changePriorityModModalState,
+                                                    );
+                                                }}
                                             />
                                         </TableCell>
                                     )}
@@ -188,6 +212,49 @@ function ModList() {
                         selectedModRow={showDeleteModModal.selectedModRow}
                         onModalStateChange={(newState) => {
                             setShowDeleteModModal(newState);
+                        }}
+                    />
+                )}
+
+                {showChangePriorityModModalState.isOpen && (
+                    <ChangePriorityModal
+                        selectedModRow={
+                            showChangePriorityModModalState.selectedModRow
+                        }
+                        fromIndex={showChangePriorityModModalState.fromIndex}
+                        onModalStateChange={(newState) => {
+                            setShowChangePriorityModModal(newState);
+                        }}
+                        onChangePriority={async (toIndex) => {
+                            if (
+                                toIndex >
+                                modFiles.tempModProfileData.length - 1
+                            ) {
+                                toIndex =
+                                    modFiles.tempModProfileData.length - 1;
+                            }
+
+                            const mods = Array.from(
+                                modFiles.tempModProfileData,
+                            );
+                            const [removed] = mods.splice(
+                                showChangePriorityModModalState.fromIndex,
+                                1,
+                            );
+                            mods.splice(toIndex, 0, removed);
+
+                            runInAction(() => {
+                                modFiles.modProfileData = mods;
+                                modFiles.tempModProfileData = mods;
+                            });
+
+                            setShowChangePriorityModModal({
+                                isOpen: false,
+                                selectedModRow: null,
+                                fromIndex: null,
+                            });
+
+                            await modFiles.saveModProfile();
                         }}
                     />
                 )}

@@ -11,6 +11,7 @@ class ModFiles {
     modProfileData = [];
     tempModProfileData = [];
     draggingId = null;
+    searchFilter = '';
 
     constructor() {
         makeAutoObservable(this);

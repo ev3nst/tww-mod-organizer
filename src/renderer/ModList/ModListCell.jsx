@@ -6,7 +6,7 @@ import {
     DropdownItem,
     Link,
 } from '@nextui-org/react';
-import { EyeIcon, TrashIcon } from '@heroicons/react/24/solid';
+import { ArrowRightIcon, EyeIcon, TrashIcon } from '@heroicons/react/24/solid';
 import { VerticalDotsIcon } from '../Icons';
 import ModListCellIcon from './ModListCellIcon';
 import dbKeys from '../../main/db/keys';
@@ -16,6 +16,7 @@ const ModListCell = ({
     row,
     columnKey,
     onDeleteModalClick,
+    onChangePriorityModalClick,
     modProfileData,
 }) => {
     switch (columnKey) {
@@ -134,6 +135,26 @@ const ModListCell = ({
                                     </Link>
                                 </DropdownItem>
                             )}
+
+                            <DropdownItem
+                                onClick={() => {
+                                    const modIndex = modProfileData.findIndex(
+                                        function (modData) {
+                                            return modData.id === row.id;
+                                        },
+                                    );
+                                    onChangePriorityModalClick({
+                                        isOpen: true,
+                                        selectedModRow: row,
+                                        fromIndex: modIndex,
+                                    });
+                                }}
+                                startContent={
+                                    <ArrowRightIcon className="h-4 w-4" />
+                                }
+                            >
+                                Set Priority
+                            </DropdownItem>
 
                             <DropdownItem
                                 onClick={() => {

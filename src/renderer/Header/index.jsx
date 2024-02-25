@@ -2,7 +2,6 @@ import {
     Navbar,
     NavbarContent,
     NavbarItem,
-    Input,
     DropdownItem,
     DropdownTrigger,
     Dropdown,
@@ -13,7 +12,7 @@ import {
 } from '@nextui-org/react';
 import { observer } from 'mobx-react';
 import { ArrowPathIcon } from '@heroicons/react/24/solid';
-import { Activity, Flash, Server, TagUser, Scale, Search } from '../Icons';
+import { Activity, Flash, Server, TagUser, Scale } from '../Icons';
 
 import settings from '../../store/settings';
 import modFiles from '../../store/modFiles';
@@ -24,6 +23,7 @@ import supportedGames from '../../store/supportedGames.js';
 import InstallMod from './InstallMod';
 import SwitchGames from './SwitchGames';
 import Settings from './Settings';
+import FilterMods from './FilterMods';
 
 import appIcon from '../../../assets/icon.png';
 import nexusLogo from '../../../assets/nexus-logo.png';
@@ -140,19 +140,7 @@ const Header = () => {
                 <Button color="foreground">
                     Mod Count: {modFiles.files.length}
                 </Button>
-                <Input
-                    classNames={{
-                        base: 'max-w-full sm:max-w-[20rem] h-10 mr-5',
-                        mainWrapper: 'h-full',
-                        input: 'text-small',
-                        inputWrapper:
-                            'h-full font-normal text-default-500 bg-default-400/20 dark:bg-default-500/20',
-                    }}
-                    placeholder="Type to search..."
-                    size="sm"
-                    startContent={<Search size={18} />}
-                    type="search"
-                />
+                <FilterMods />
                 <Avatar
                     isBordered
                     as="button"
