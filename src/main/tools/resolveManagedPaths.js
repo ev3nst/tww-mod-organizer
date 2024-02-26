@@ -15,7 +15,7 @@ export function resolveModInstallationPath() {
     }
 
     if (!fs.existsSync(modInstallationPath)) {
-        fs.mkdirSync(modInstallationPath);
+        mkdripSync(modInstallationPath);
     }
 
     return modInstallationPath;
@@ -33,7 +33,7 @@ export function resolveManagedPaths() {
 
     const modInstallationFolder = resolveModInstallationPath();
     if (!fs.existsSync(modInstallationFolder)) {
-        fs.mkdirSync(modInstallationFolder);
+        mkdripSync(modInstallationFolder);
     }
 
     const modProfilesPath = path.join(app.getPath('userData'), 'profiles');

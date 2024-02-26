@@ -6,8 +6,17 @@ contextBridge.exposeInMainWorld('electronAPI', {
     checkExistingMod: (modName) =>
         ipcRenderer.invoke('checkExistingMod', modName),
 
-    installMod: (modName, zipPath, sameNameAction) =>
-        ipcRenderer.invoke('installMod', modName, zipPath, sameNameAction),
+    checkModZipFiles: (zipPath) =>
+        ipcRenderer.invoke('checkModZipFiles', zipPath),
+
+    installMod: (modName, zipPath, sameNameAction, packFileName) =>
+        ipcRenderer.invoke(
+            'installMod',
+            modName,
+            zipPath,
+            sameNameAction,
+            packFileName,
+        ),
 
     getModsMetaInformation: () => ipcRenderer.invoke('getModsMetaInformation'),
 

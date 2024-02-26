@@ -1,6 +1,7 @@
 import { app } from 'electron';
 import winreg from 'winreg';
 import fs from 'fs';
+import { readdir } from 'fs/promises';
 import path from 'path';
 
 import db from '../db';
@@ -127,6 +128,7 @@ export async function getWorkshopMods() {
         (sgf) => sgf.slug === managedGame,
     )[0];
 
+    const gameInstallationPaths = db.get(dbKeys.GAME_INSTALL_PATHS);
     const dbSubscribedModIds = db.get(dbKeys.STEAM_WORKSHOP_IDS);
     const dbSubscribedModDetails = db.get(dbKeys.STEAM_WORKSHOP_DETAILS);
     const subscribedModIds = await steamClient.getSubscribedItems(
@@ -149,6 +151,11 @@ export async function getWorkshopMods() {
             managedGameDetails.steamId,
             subscribedModIds,
         );
+        const workshopContentPath = path.resolve(
+            gameInstallationPaths[managedGame],
+            '../../workshop/content/' + managedGameDetails.steamId,
+        );
+
         const subscribedModDetails = subscribedMods.map((sm) => {
             return {
                 id: String(sm.publishedFileId),
@@ -166,6 +173,25 @@ export async function getWorkshopMods() {
                     : null,
             };
         });
+
+        for (let smdi = 0; smdi < subscribedModDetails.length; smdi++) {
+            const subscribedModDetail = subscribedModDetails[smdi];
+            const packFileName = (
+                await readdir(
+                    path.join(
+                        workshopContentPath,
+                        String(subscribedModDetail.id),
+                    ),
+                    { withFileTypes: true },
+                )
+            )
+                .filter((dirent) => dirent.name.endsWith('.pack'))
+                .map((dir) => dir.name);
+
+            if (typeof packFileName[0] !== 'undefined') {
+                subscribedModDetails[smdi].packFileName = packFileName[0];
+            }
+        }
 
         db.set(dbKeys.STEAM_WORKSHOP_DETAILS, {
             ...dbSubscribedModDetails,

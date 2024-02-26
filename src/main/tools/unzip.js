@@ -3,20 +3,24 @@ import path from 'path';
 import { sync as mkdripSync } from 'mkdirp';
 import { unzipSync } from 'fflate';
 
-async function unzip(zipfile, opts) {
-    var {
+async function unzip(zipfile, opts, fileNames = []) {
+    const {
             to: { directory: odir, fs: ofs },
         } = options(opts),
-        z = unzipSync(await open(zipfile));
+        z = unzipSync(await openZip(zipfile));
 
     for (let [relativePath, content] of Object.entries(z)) {
-        var outf = path.join(odir, relativePath);
+        if (fileNames.length > 0 && !fileNames.includes(relativePath)) {
+            continue;
+        }
+
+        const outf = path.join(odir, relativePath);
         mkdripSync(path.dirname(outf), { fs: ofs });
         ofs.writeFileSync(outf, content);
     }
 }
 
-async function open(zipfile) {
+export async function openZip(zipfile) {
     if (typeof zipfile === 'string') {
         return fs.readFileSync
             ? fs.readFileSync(zipfile)

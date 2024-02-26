@@ -13,6 +13,7 @@ import { observer } from 'mobx-react';
 import modFiles from '../../store/modFiles';
 import DeleteModModal from './DeleteModModal';
 import ChangePriorityModal from './ChangePriorityModal';
+import ShowConflictsModal from './ShowConflictsModal';
 import ModProfiles from './ModProfiles';
 import ModOrdering from './ModOrdering';
 import ModListCell from './ModListCell';
@@ -79,6 +80,12 @@ function ModList() {
             fromIndex: null,
         });
 
+    const [changeConflictModalState, setShowConflictsModalClick] = useState({
+        isOpen: false,
+        selectedModRow: null,
+        conflicts: [],
+    });
+
     let items = modFilesData.files.slice();
     if (modFilesData.searchFilter.length > 0) {
         items = items.filter((mf) =>
@@ -116,30 +123,35 @@ function ModList() {
                 <Table
                     isCompact
                     removeWrapper
-                    checkboxesProps={{
-                        classNames: {
-                            wrapper:
-                                'after:bg-foreground after:text-background text-background',
-                        },
-                    }}
-                    classNames={ModListStyles}
+                    checkboxesProps={ModListStyles.checkbox}
+                    classNames={ModListStyles.table}
                     topContentPlacement="outside"
                     selectionMode="multiple"
                     selectedKeys={selectedKeys}
+                    selectionBehavior="toggle"
                     onSelectionChange={async (keys) => {
-                        const selectedArr = Array.from(keys);
-                        const selectedModFiles = modFilesData.files.filter(
-                            (mf) => selectedArr.includes(mf.title),
-                        );
-                        const selectedModIds = selectedModFiles.map(
-                            (smf) => smf.id,
-                        );
+                        let selectedModIds = [];
+                        if (typeof keys === 'string' && keys === 'all') {
+                            selectedModIds = modFilesData.files.map(
+                                (mf) => mf.id,
+                            );
+                        } else {
+                            const selectedArr = Array.from(keys);
+                            const selectedModFiles = modFilesData.files.filter(
+                                (mf) => selectedArr.includes(mf.title),
+                            );
+                            selectedModIds = selectedModFiles.map(
+                                (smf) => smf.id,
+                            );
+                        }
+
                         const updatedModProfileData =
                             await window.electronAPI.setActiveMods(
                                 selectedModIds,
                             );
                         runInAction(() => {
                             modFiles.modProfileData = updatedModProfileData;
+                            modFiles.tempModProfileData = updatedModProfileData;
                         });
                     }}
                 >
@@ -185,6 +197,9 @@ function ModList() {
                                                 modProfileData={
                                                     modFilesData.modProfileData
                                                 }
+                                                conflictData={
+                                                    modFilesData.conflicts
+                                                }
                                                 onDeleteModalClick={(
                                                     deleteModModalState,
                                                 ) => {
@@ -197,6 +212,13 @@ function ModList() {
                                                 ) => {
                                                     setShowChangePriorityModModal(
                                                         changePriorityModModalState,
+                                                    );
+                                                }}
+                                                onShowConflictsModalClick={(
+                                                    changeConflictModalState,
+                                                ) => {
+                                                    setShowConflictsModalClick(
+                                                        changeConflictModalState,
                                                     );
                                                 }}
                                             />
@@ -255,6 +277,17 @@ function ModList() {
                             });
 
                             await modFiles.saveModProfile();
+                        }}
+                    />
+                )}
+
+                {changeConflictModalState.isOpen && (
+                    <ShowConflictsModal
+                        selectedModRow={changeConflictModalState.selectedModRow}
+                        conflicts={changeConflictModalState.conflicts}
+                        modFilesData={modFilesData}
+                        onModalStateChange={(newState) => {
+                            setShowConflictsModalClick(newState);
                         }}
                     />
                 )}

@@ -6,6 +6,7 @@ import openExternalLink from './openExternalLink';
 import fsExists from './fsExists';
 import getAvailableModProfiles from './getAvailableModProfiles';
 import checkExistingMod from './checkExistingMod';
+import checkModZipFiles from './checkModZipFiles';
 import deleteMod from './deleteMod';
 import deleteSaveFiles from './deleteSaveFiles';
 import getDownloadedArchives from './getDownloadedArchives';
@@ -36,6 +37,7 @@ export default function ipcHandlers() {
     fsExists();
     getAvailableModProfiles();
     checkExistingMod();
+    checkModZipFiles();
     deleteMod();
     deleteSaveFiles();
     getDownloadedArchives();

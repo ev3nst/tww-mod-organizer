@@ -28,22 +28,38 @@ export async function retrieveModProfile(profileName) {
     } else {
         const loadProfileDataRaw = fs.readFileSync(profileFilePath, 'utf-8');
         const loadProfileData = JSON.parse(loadProfileDataRaw);
-        const loadProfileDataResolved = [];
-        let rewriteLoadOrder = false;
+        let loadProfileDataResolved = [];
+
         for (let lpdi = 0; lpdi < loadProfileData.length; lpdi++) {
             const row = loadProfileData[lpdi];
-            if (modFiles.findIndex((v) => v.id === row.id) !== -1) {
+
+            // Previously existed mod with given id does not exists
+            if (modFiles.findIndex((v) => v.id === row.id) === -1) {
+                loadProfileDataResolved = loadProfileDataResolved.filter(
+                    function (obj) {
+                        return obj.id === row.id;
+                    },
+                );
+            } else {
                 loadProfileDataResolved.push(row);
-                rewriteLoadOrder = true;
             }
         }
 
-        if (rewriteLoadOrder) {
-            fs.writeFileSync(
-                profileFilePath,
-                JSON.stringify(loadProfileDataResolved),
-            );
+        for (let mfi = 0; mfi < modFiles.length; mfi++) {
+            const mf = modFiles[mfi];
+            // New mod added
+            if (
+                loadProfileDataResolved.findIndex((v) => v.id === mf.id) === -1
+            ) {
+                loadProfileDataResolved.push(mf);
+            }
         }
+
+        fs.writeFileSync(
+            profileFilePath,
+            JSON.stringify(loadProfileDataResolved),
+        );
+
         return loadProfileDataResolved;
     }
 }

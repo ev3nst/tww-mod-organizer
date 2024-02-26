@@ -19,6 +19,8 @@ const ModListCell = ({
     onDeleteModalClick,
     onChangePriorityModalClick,
     modProfileData,
+    conflictData,
+    onShowConflictsModalClick,
 }) => {
     switch (columnKey) {
         case 'order':
@@ -55,6 +57,35 @@ const ModListCell = ({
                             </p>
                         ))}
                     </div>
+                );
+            }
+
+            return '';
+        case 'conflict':
+            if (
+                typeof row.packFileName !== 'undefined' &&
+                row.packFileName !== null &&
+                String(row.packFileName).length > 0 &&
+                typeof conflictData !== 'undefined' &&
+                typeof conflictData[row.packFileName] !== 'undefined'
+            ) {
+                const conflictedFilesLength = Object.keys(
+                    conflictData[row.packFileName],
+                ).length;
+
+                return (
+                    <Link
+                        className="cursor-pointer hover:text-success"
+                        onClick={() => {
+                            onShowConflictsModalClick({
+                                isOpen: true,
+                                selectedModRow: row,
+                                conflicts: conflictData[row.packFileName],
+                            });
+                        }}
+                    >
+                        {conflictedFilesLength}
+                    </Link>
                 );
             }
 
@@ -117,8 +148,12 @@ const ModListCell = ({
                                                 await window.electronAPI.dbGet(
                                                     dbKeys.MOD_INSTALLATION_FOLDER,
                                                 );
+                                            const managedGame =
+                                                await window.electronAPI.dbGet(
+                                                    dbKeys.MANAGED_GAME,
+                                                );
                                             window.electronAPI.showItemInFolder(
-                                                `${modInstallationFolder}\\${row.title}`,
+                                                `${modInstallationFolder}\\${managedGame}\\${row.title}`,
                                             );
                                         }}
                                     >

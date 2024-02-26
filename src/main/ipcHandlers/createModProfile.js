@@ -3,8 +3,8 @@ import path from 'path';
 import fs from 'fs';
 import { sync as mkdripSync } from 'mkdirp';
 
-import dbKeys from '../db/keys';
 import db from '../db';
+import dbKeys from '../db/keys';
 
 export default async function createModProfile() {
     ipcMain.handle(

@@ -5,11 +5,15 @@ import Downloads from './Downloads';
 
 function Sidebar() {
     return (
-        <>
-            <div className="flex flex-col flex-grow">
-                <Tabs aria-label="Options" variant="bordered" fullWidth c>
+        <div className="flex flex-col justify-between h-full">
+            <div
+                className="overflow-auto"
+                style={{
+                    maxHeight: 'calc(100% - 100px)',
+                }}
+            >
+                <Tabs aria-label="Options" variant="bordered" fullWidth>
                     <Tab
-                        className="flex-grow"
                         key="saves"
                         title={
                             <div className="flex items-center space-x-2">
@@ -18,14 +22,13 @@ function Sidebar() {
                             </div>
                         }
                     >
-                        <Card className="bg-zinc-950/90 h-full">
-                            <CardBody className="h-full">
+                        <Card className="bg-zinc-950/90">
+                            <CardBody>
                                 <SaveGames />
                             </CardBody>
                         </Card>
                     </Tab>
                     <Tab
-                        className="flex-grow"
                         key="downloads"
                         title={
                             <div className="flex items-center space-x-2">
@@ -42,7 +45,6 @@ function Sidebar() {
                     </Tab>
                 </Tabs>
             </div>
-
             <Button
                 className="h-20	text-2xl ml-1 mt-5"
                 size="lg"
@@ -51,7 +53,7 @@ function Sidebar() {
             >
                 LAUNCH
             </Button>
-        </>
+        </div>
     );
 }
 

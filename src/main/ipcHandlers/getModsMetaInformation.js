@@ -32,9 +32,12 @@ export async function retrieveModsMetaInformation() {
 
     for (let di = 0; di < directories.length; di++) {
         const dir = directories[di];
-        const metaDataPath = path.join(
+        const currentModInstallationPath = path.join(
             gameSpecificModInstallFolder,
             dir,
+        );
+        const metaDataPath = path.join(
+            currentModInstallationPath,
             'tww-mod-organizer.meta',
         );
         const blankNewMeta = {
@@ -42,6 +45,16 @@ export async function retrieveModsMetaInformation() {
             title: dir,
             version: '1.0',
         };
+
+        const packFileName = (
+            await readdir(currentModInstallationPath, { withFileTypes: true })
+        )
+            .filter((dirent) => dirent.name.endsWith('.pack'))
+            .map((dir) => dir.name);
+
+        const currentModPackName =
+            typeof packFileName[0] !== 'undefined' ? packFileName[0] : null;
+        blankNewMeta.packFileName = currentModPackName;
         if (!fs.existsSync(metaDataPath)) {
             manuallyInstalledMods.push(blankNewMeta);
             fs.writeFileSync(metaDataPath, JSON.stringify(blankNewMeta));
@@ -49,6 +62,7 @@ export async function retrieveModsMetaInformation() {
             const modMetaTextData = fs.readFileSync(metaDataPath, 'utf8');
             let modMeta;
             modMeta = JSON.parse(modMetaTextData);
+            modMeta.packFileName = currentModPackName;
 
             if (!modMeta) {
                 manuallyInstalledMods.push(blankNewMeta);

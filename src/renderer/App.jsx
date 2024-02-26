@@ -41,7 +41,7 @@ function App() {
                                 </CardBody>
                             </Card>
 
-                            <div className="w-4/12 flex flex-col justify-between">
+                            <div className="w-4/12">
                                 <Sidebar />
                             </div>
                         </div>

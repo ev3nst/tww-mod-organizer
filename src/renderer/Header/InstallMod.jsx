@@ -13,6 +13,7 @@ import {
 import { observer } from 'mobx-react';
 import { runInAction, toJS } from 'mobx';
 import { ArchiveBoxIcon } from '@heroicons/react/24/solid';
+import toast from 'react-hot-toast';
 import modFiles from '../../store/modFiles';
 
 const InstallMod = () => {
@@ -25,6 +26,9 @@ const InstallMod = () => {
         defaultModName: '',
         showSameNameModInputs: false,
         sameNameAction: null,
+        hasMultiplePacks: false,
+        multiplePacks: [],
+        packFileName: '',
     });
 
     return (
@@ -76,31 +80,58 @@ const InstallMod = () => {
                             }}
                         />
 
-                        {installModConfirm.showSameNameModInputs === true && (
-                            <RadioGroup
-                                label="Mod with same name exists. You can either select the options below or write a different name."
-                                color="warning"
-                                onChange={(event) => {
-                                    setInstallModConfirm({
-                                        ...installModConfirm,
-                                        sameNameAction: event.target.value,
-                                    });
-                                }}
-                            >
-                                <Radio
-                                    value="replace"
-                                    description="Replace the contents of the mod with the new archive."
+                        {installModConfirm.showSameNameModInputs === true &&
+                            installModConfirm.sameNameAction === null && (
+                                <RadioGroup
+                                    label="Mod with same name exists. You can either select the options below or write a different name."
+                                    color="warning"
+                                    onChange={(event) => {
+                                        setInstallModConfirm({
+                                            ...installModConfirm,
+                                            sameNameAction: event.target.value,
+                                        });
+                                    }}
                                 >
-                                    Replace
-                                </Radio>
-                                <Radio
-                                    value="merge"
-                                    description="Merges the contents of the archive with the existing ones."
+                                    <Radio
+                                        value="replace"
+                                        description="Replace the contents of the mod with the new archive."
+                                    >
+                                        Replace
+                                    </Radio>
+                                    <Radio
+                                        className="hidden"
+                                        value="merge"
+                                        description="Merges the contents of the archive with the existing ones."
+                                    >
+                                        Merge
+                                    </Radio>
+                                </RadioGroup>
+                            )}
+
+                        {installModConfirm.showSameNameModInputs === false &&
+                            installModConfirm.hasMultiplePacks === true && (
+                                <RadioGroup
+                                    label="This archive contains multiple .pack files. They need to be installed separetely into their own unique mod folder. Choose which .pack file to install."
+                                    color="warning"
+                                    onChange={(event) => {
+                                        setInstallModConfirm({
+                                            ...installModConfirm,
+                                            packFileName: event.target.value,
+                                        });
+                                    }}
                                 >
-                                    Merge
-                                </Radio>
-                            </RadioGroup>
-                        )}
+                                    {installModConfirm.multiplePacks.map(
+                                        (mp) => (
+                                            <Radio
+                                                key={`multiple_pack_radio_${mp}`}
+                                                value={mp}
+                                            >
+                                                {mp}
+                                            </Radio>
+                                        ),
+                                    )}
+                                </RadioGroup>
+                            )}
                     </ModalBody>
                     <ModalFooter>
                         <Button
@@ -114,6 +145,33 @@ const InstallMod = () => {
                                         modName,
                                     );
 
+                                const checkMultiplePack =
+                                    await window.electronAPI.checkModZipFiles(
+                                        installModConfirm.zipPath,
+                                    );
+
+                                let packFileName = '';
+                                let hasMultiplePacks = false;
+                                if (
+                                    typeof checkMultiplePack !== 'undefined' &&
+                                    checkMultiplePack !== null &&
+                                    Array.isArray(checkMultiplePack)
+                                ) {
+                                    if (checkMultiplePack.length > 1) {
+                                        hasMultiplePacks = true;
+                                    }
+
+                                    if (checkMultiplePack.length === 1) {
+                                        packFileName = checkMultiplePack[0];
+                                    }
+
+                                    if (checkMultiplePack.length === 0) {
+                                        toast.error(
+                                            'This zip file does not contain .pack file. ',
+                                        );
+                                    }
+                                }
+
                                 if (
                                     checkExistingMod &&
                                     installModConfirm.sameNameAction === null
@@ -121,6 +179,21 @@ const InstallMod = () => {
                                     setInstallModConfirm({
                                         ...installModConfirm,
                                         showSameNameModInputs: true,
+                                        packFileName,
+                                        hasMultiplePacks,
+                                    });
+                                    return;
+                                }
+
+                                if (
+                                    hasMultiplePacks &&
+                                    installModConfirm.packFileName === ''
+                                ) {
+                                    setInstallModConfirm({
+                                        ...installModConfirm,
+                                        showSameNameModInputs: false,
+                                        hasMultiplePacks,
+                                        multiplePacks: checkMultiplePack,
                                     });
                                     return;
                                 }
@@ -130,7 +203,13 @@ const InstallMod = () => {
                                         modName,
                                         installModConfirm.zipPath,
                                         installModConfirm.sameNameAction,
+                                        installModConfirm.packFileName,
                                     );
+
+                                if (typeof newModMeta.error !== 'undefined') {
+                                    toast.error(newModMeta.error);
+                                    return;
+                                }
 
                                 const modFilesData = toJS(modFiles.files);
                                 if (
@@ -165,6 +244,7 @@ const InstallMod = () => {
                                     defaultModName: '',
                                     showSameNameModInputs: false,
                                     sameNameAction: null,
+                                    multiplePacks: [],
                                 });
                             }}
                         >

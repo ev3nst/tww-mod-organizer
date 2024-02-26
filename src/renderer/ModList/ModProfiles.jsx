@@ -18,8 +18,9 @@ import {
     PlusCircleIcon,
     TrashIcon,
 } from '@heroicons/react/24/solid';
-import modFiles from '../../store/modFiles';
 import toast from 'react-hot-toast';
+import modFiles from '../../store/modFiles';
+import ModConflictInitiator from './ModConflictInitiator';
 
 const ModProfiles = () => {
     const [createNewProfile, setCreateNewProfile] = useState({
@@ -30,7 +31,7 @@ const ModProfiles = () => {
     const [deleteProfileModal, setDeleteProfileModal] = useState(false);
 
     return (
-        <div className="flex items-center px-5">
+        <div className="flex items-center px-5 w-full">
             <p className="mr-3">Profile:</p>
             <Dropdown>
                 <DropdownTrigger>
@@ -188,6 +189,8 @@ const ModProfiles = () => {
                     </ModalFooter>
                 </ModalContent>
             </Modal>
+
+            <ModConflictInitiator />
         </div>
     );
 };

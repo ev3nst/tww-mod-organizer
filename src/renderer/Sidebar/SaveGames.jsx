@@ -14,12 +14,14 @@ import {
     Pagination,
     Spinner,
 } from '@nextui-org/react';
-import { runInAction, toJS } from 'mobx';
+import { toJS } from 'mobx';
 import { observer } from 'mobx-react';
 import { EyeIcon, TrashIcon } from '@heroicons/react/24/solid';
 import { VerticalDotsIcon } from '../Icons';
+import DeleteSaveFilesModal from './DeleteSaveFilesModal';
 import saveGameFiles from '../../store/saveGameFiles';
 import { readableFileSize } from '../../helpers/util';
+import SaveGameStyles from './SaveGameStyles';
 
 const columns = [
     { name: 'NAME', uid: 'name', sortable: true },
@@ -34,7 +36,7 @@ function SaveGames() {
     }, []);
 
     const saveGameFilesData = toJS(saveGameFiles);
-    const rowsPerPage = 14;
+    const rowsPerPage = 10;
     const pages = Math.ceil(saveGameFiles.files.length / rowsPerPage);
     const [selectedKeys, setSelectedKeys] = useState(new Set([]));
     const [sortDescriptor, setSortDescriptor] = useState({
@@ -42,6 +44,10 @@ function SaveGames() {
         direction: 'descending',
     });
     const [page, setPage] = useState(1);
+    const [deleteSaveFileModal, setDeleteSaveFileModal] = useState({
+        isOpen: false,
+        selectedSaveFiles: [],
+    });
 
     const items = useMemo(() => {
         const start = (page - 1) * rowsPerPage;
@@ -102,37 +108,47 @@ function SaveGames() {
                                             <TrashIcon className="h-4 w-4 text-danger" />
                                         }
                                         onClick={() => {
-                                            let selectedFiles =
+                                            let selectedSaveFiles =
                                                 Array.from(selectedKeys);
 
-                                            if (selectedFiles.length === 0) {
-                                                selectedFiles = [row.name];
+                                            // No selection made
+                                            if (
+                                                selectedSaveFiles.length === 0
+                                            ) {
+                                                selectedSaveFiles = [row.name];
                                             }
 
-                                            window.electronAPI.deleteSaveFiles(
-                                                selectedFiles,
-                                            );
+                                            let resolvedSaveFiles = [];
+                                            for (
+                                                let ssfi = 0;
+                                                ssfi < selectedSaveFiles.length;
+                                                ssfi++
+                                            ) {
+                                                const row =
+                                                    selectedSaveFiles[ssfi];
+                                                const index =
+                                                    saveGameFilesData.files.findIndex(
+                                                        (fi) => fi.name === row,
+                                                    );
+                                                if (index !== -1) {
+                                                    resolvedSaveFiles.push(row);
+                                                }
+                                            }
 
-                                            const newFilesList =
-                                                saveGameFilesData.files.filter(
-                                                    function (objFromA) {
-                                                        return !selectedFiles.find(
-                                                            function (
-                                                                objFromB,
-                                                            ) {
-                                                                return (
-                                                                    objFromA.name ===
-                                                                    objFromB
-                                                                );
-                                                            },
-                                                        );
-                                                    },
-                                                );
+                                            if (selectedKeys === 'all') {
+                                                resolvedSaveFiles =
+                                                    saveGameFilesData.files
+                                                        .slice(0, rowsPerPage)
+                                                        .map((sff) => sff.name);
+                                            }
 
-                                            runInAction(() => {
-                                                saveGameFiles.files =
-                                                    newFilesList;
-                                            });
+                                            if (resolvedSaveFiles.length > 0) {
+                                                setDeleteSaveFileModal({
+                                                    isOpen: true,
+                                                    selectedSaveFiles:
+                                                        resolvedSaveFiles,
+                                                });
+                                            }
                                         }}
                                     >
                                         Delete
@@ -161,97 +177,74 @@ function SaveGames() {
                     total={pages}
                     onChange={setPage}
                 />
-                <span className="text-default-400 text-small">
+                <span className="text-default-400 text-small hidden 2xl:flex">
                     Total {saveGameFiles.files.length} files
                 </span>
             </div>
         );
     }, [setPage, page, pages]);
 
-    const classNames = useMemo(
-        () => ({
-            base: ['h-full'],
-            wrapper: [
-                'bg-transparent',
-                'border-0',
-                'shadow-none',
-                'p-0',
-                'h-full',
-            ],
-            th: [
-                'bg-transparent',
-                'text-default-500',
-                'border-b',
-                'border-divider',
-            ],
-            td: [
-                // changing the rows border radius
-                // first
-                'group-data-[first=true]:first:before:rounded-none',
-                'group-data-[first=true]:last:before:rounded-none',
-                // middle
-                'group-data-[middle=true]:before:rounded-none',
-                // last
-                'group-data-[last=true]:first:before:rounded-none',
-                'group-data-[last=true]:last:before:rounded-none',
-            ],
-        }),
-        [],
-    );
-
     if (saveGameFiles.loading === true) {
         return <Spinner />;
     }
 
     return (
-        <Table
-            isCompact
-            bottomContent={bottomContent}
-            bottomContentPlacement="outside"
-            checkboxesProps={{
-                classNames: {
-                    wrapper:
-                        'after:bg-foreground after:text-background text-background',
-                },
-            }}
-            classNames={classNames}
-            selectedKeys={selectedKeys}
-            selectionMode="multiple"
-            sortDescriptor={sortDescriptor}
-            topContentPlacement="outside"
-            onSelectionChange={setSelectedKeys}
-            onSortChange={setSortDescriptor}
-        >
-            <TableHeader columns={columns}>
-                {(column) => (
-                    <TableColumn
-                        key={column.uid}
-                        className={
-                            column.uid === 'size' || column.uid === 'date'
-                                ? 'hidden 2xl:table-cell'
-                                : ''
-                        }
-                        align={column.uid === 'actions' ? 'center' : 'start'}
-                        allowsSorting={column.sortable}
-                    >
-                        {column.name}
-                    </TableColumn>
-                )}
-            </TableHeader>
-            <TableBody emptyContent="No files found" items={sortedItems}>
-                {(item) => (
-                    <TableRow key={item.name}>
-                        {(columnKey) => (
-                            <TableCell
-                                className={`subpixel-antialiased text-xs ${columnKey === 'size' || columnKey === 'date' ? 'hidden 2xl:table-cell' : ''}`}
-                            >
-                                {renderCell(item, columnKey)}
-                            </TableCell>
-                        )}
-                    </TableRow>
-                )}
-            </TableBody>
-        </Table>
+        <>
+            <Table
+                isCompact
+                removeWrapper
+                bottomContent={bottomContent}
+                bottomContentPlacement="outside"
+                checkboxesProps={SaveGameStyles.checkbox}
+                classNames={SaveGameStyles.table}
+                selectedKeys={selectedKeys}
+                selectionMode="multiple"
+                sortDescriptor={sortDescriptor}
+                topContentPlacement="outside"
+                onSelectionChange={setSelectedKeys}
+                onSortChange={setSortDescriptor}
+            >
+                <TableHeader columns={columns}>
+                    {(column) => (
+                        <TableColumn
+                            key={column.uid}
+                            className={
+                                column.uid === 'size' || column.uid === 'date'
+                                    ? 'hidden 2xl:table-cell'
+                                    : ''
+                            }
+                            align={
+                                column.uid === 'actions' ? 'center' : 'start'
+                            }
+                            allowsSorting={column.sortable}
+                        >
+                            {column.name}
+                        </TableColumn>
+                    )}
+                </TableHeader>
+                <TableBody emptyContent="No files found" items={sortedItems}>
+                    {(item) => (
+                        <TableRow key={item.name}>
+                            {(columnKey) => (
+                                <TableCell
+                                    className={`subpixel-antialiased text-xs ${columnKey === 'size' || columnKey === 'date' ? 'hidden 2xl:table-cell' : ''}`}
+                                >
+                                    {renderCell(item, columnKey)}
+                                </TableCell>
+                            )}
+                        </TableRow>
+                    )}
+                </TableBody>
+            </Table>
+            {deleteSaveFileModal.isOpen === true && (
+                <DeleteSaveFilesModal
+                    selectedSaveFiles={deleteSaveFileModal.selectedSaveFiles}
+                    onModalStateChange={(newState) => {
+                        setDeleteSaveFileModal(newState);
+                    }}
+                />
+            )}
+        </>
     );
 }
 

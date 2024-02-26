@@ -1,5 +1,141 @@
 import { ipcMain } from 'electron';
+import path from 'path';
+import fs from 'fs';
+import { sync as mkdripSync } from 'mkdirp';
+import { readdir } from 'fs/promises';
+import workerpool from 'workerpool';
+
+import db from '../db';
+import dbKeys from '../db/keys';
+import supportedGames from '../../store/supportedGames';
+import { resolveModInstallationPath } from '../tools/resolveManagedPaths';
+
+const TWENTY_MINUTES = 60 * 20 * 1000;
+const pool = workerpool.pool(
+    path.resolve(__dirname, '../pack-file-manager/pack-file.worker.js'),
+);
 
 export default function getModConflicts() {
-    ipcMain.handle('getModConflicts', async () => {});
+    ipcMain.handle('getModConflicts', async (_e, forceClearCache = false) => {
+        const tenMinutesAgo = Date.now() - TWENTY_MINUTES;
+        const isAlreadyRunning = db.get(dbKeys.PACK_CONFLICT_RESOLVER_STATE);
+        const packConflictResolveTimestamp = db.get(
+            dbKeys.PACK_CONFLICT_RESOLVER_TIMESTAMP,
+        );
+
+        if (
+            (typeof packConflictResolveTimestamp === 'undefined' ||
+                packConflictResolveTimestamp === null ||
+                packConflictResolveTimestamp > tenMinutesAgo) &&
+            isAlreadyRunning
+        ) {
+            return null;
+        }
+
+        if (forceClearCache === true) {
+            db.set(dbKeys.PACK_CONFLICT_RESOLVER_TIMESTAMP, null);
+            db.set(dbKeys.PACK_CONFLICT_RESOLVER_DATA, null);
+        } else {
+            if (
+                typeof packConflictResolveTimestamp !== 'undefined' &&
+                packConflictResolveTimestamp !== null
+            ) {
+                if (packConflictResolveTimestamp > tenMinutesAgo) {
+                    const packConflictResolveData = db.get(
+                        dbKeys.PACK_CONFLICT_RESOLVER_DATA,
+                    );
+
+                    return packConflictResolveData;
+                }
+            }
+        }
+
+        db.set(dbKeys.PACK_CONFLICT_RESOLVER_STATE, true);
+        const managedGame = db.get(dbKeys.MANAGED_GAME);
+        const managedGameDetails = supportedGames.filter(
+            (sgf) => sgf.slug === managedGame,
+        )[0];
+        const gameInstallationPaths = db.get(dbKeys.GAME_INSTALL_PATHS);
+        const workshopContentPath = path.resolve(
+            gameInstallationPaths[managedGame],
+            '../../workshop/content/' + managedGameDetails.steamId,
+        );
+        const packFilePaths = [];
+        const steamModDirectories = (
+            await readdir(workshopContentPath, { withFileTypes: true })
+        )
+            .filter((dirent) => dirent.isDirectory())
+            .map((dir) => dir.name);
+
+        for (let di = 0; di < steamModDirectories.length; di++) {
+            const modSteamIdDirectory = steamModDirectories[di];
+            const modContentPath = path.join(
+                workshopContentPath,
+                modSteamIdDirectory,
+            );
+
+            const modContents = fs.readdirSync(modContentPath);
+            for (let mci = 0; mci < modContents.length; mci++) {
+                const modContent = modContents[mci];
+                if (modContent.endsWith('.pack')) {
+                    packFilePaths.push(path.join(modContentPath, modContent));
+                    break;
+                }
+            }
+        }
+
+        const modInstallationFolder = resolveModInstallationPath();
+        const gameSpecificModInstallFolder = path.join(
+            modInstallationFolder,
+            managedGame,
+        );
+
+        if (!fs.existsSync(gameSpecificModInstallFolder)) {
+            mkdripSync(gameSpecificModInstallFolder);
+        }
+
+        const manualModDirectories = (
+            await readdir(gameSpecificModInstallFolder, { withFileTypes: true })
+        )
+            .filter((dirent) => dirent.isDirectory())
+            .map((dir) => dir.name);
+
+        for (let di = 0; di < manualModDirectories.length; di++) {
+            const manualModDirectory = manualModDirectories[di];
+            const modContentPath = path.join(
+                gameSpecificModInstallFolder,
+                manualModDirectory,
+            );
+
+            const modContents = fs.readdirSync(modContentPath);
+            for (let mci = 0; mci < modContents.length; mci++) {
+                const modContent = modContents[mci];
+                if (modContent.endsWith('.pack')) {
+                    packFilePaths.push(path.join(modContentPath, modContent));
+                    break;
+                }
+            }
+        }
+
+        const packFileContents = [];
+        for (let pfpi = 0; pfpi < packFilePaths.length; pfpi++) {
+            const packFilePath = packFilePaths[pfpi];
+            packFileContents.push(
+                await pool.exec('readPack', [
+                    packFilePath,
+                    { skipParsingTables: false },
+                    managedGame === 'tww3' ? 'wh3' : 'wh2',
+                ]),
+            );
+        }
+
+        const collisions = await pool.exec('findPackFileCollisions', [
+            packFileContents,
+        ]);
+
+        db.set(dbKeys.PACK_CONFLICT_RESOLVER_DATA, collisions);
+        db.set(dbKeys.PACK_CONFLICT_RESOLVER_STATE, false);
+        db.set(dbKeys.PACK_CONFLICT_RESOLVER_TIMESTAMP, new Date().getTime());
+        return collisions;
+    });
 }

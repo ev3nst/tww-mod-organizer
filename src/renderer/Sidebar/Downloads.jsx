@@ -34,7 +34,7 @@ function Downloads() {
     }, []);
 
     const downloadedFilesData = toJS(downloadedFiles);
-    const rowsPerPage = 14;
+    const rowsPerPage = 10;
     const pages = Math.ceil(downloadedFiles.files.length / rowsPerPage);
     const [selectedKeys, setSelectedKeys] = useState(new Set([]));
     const [sortDescriptor, setSortDescriptor] = useState({
@@ -161,7 +161,7 @@ function Downloads() {
                     total={pages}
                     onChange={setPage}
                 />
-                <span className="text-default-400 text-small">
+                <span className="text-default-400 text-small 2xl:flex">
                     Total {downloadedFiles.files.length} files
                 </span>
             </div>
@@ -170,14 +170,7 @@ function Downloads() {
 
     const classNames = useMemo(
         () => ({
-            base: ['h-full'],
-            wrapper: [
-                'bg-transparent',
-                'border-0',
-                'shadow-none',
-                'p-0',
-                'h-full',
-            ],
+            wrapper: ['bg-transparent', 'border-0', 'shadow-none', 'p-0'],
             th: [
                 'bg-transparent',
                 'text-default-500',

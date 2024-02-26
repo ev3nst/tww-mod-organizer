@@ -12,6 +12,8 @@ class ModFiles {
     tempModProfileData = [];
     draggingId = null;
     searchFilter = '';
+    conflicts = [];
+    conflictsLoading = false;
 
     constructor() {
         makeAutoObservable(this);
@@ -69,12 +71,11 @@ class ModFiles {
     }
 
     async changeModProfile(profileName) {
-        const modProfileData =
-            await window.electronAPI.getModProfile(profileName);
         await window.electronAPI.dbSet(dbKeys.MOD_PROFILE, profileName);
+        await this.getModProfile();
+        await this.getFiles();
+        await this.getModConflicts();
         runInAction(() => {
-            this.modProfileData = modProfileData;
-            this.tempModProfileData = modProfileData;
             this.modProfile = profileName;
         });
     }
@@ -97,6 +98,27 @@ class ModFiles {
         runInAction(() => {
             this.availableModProfiles = newAvailableModProfiles;
             this.modProfile = profileName;
+        });
+    }
+
+    async getModConflicts() {
+        runInAction(() => {
+            this.conflictsLoading = true;
+        });
+        const conflicts = await window.electronAPI.getModConflicts();
+        console.log(conflicts, 'CONLICTS??');
+        if (conflicts === null) {
+            const isConflictResolverRunning = await window.electronAPI.dbGet(
+                dbKeys.PACK_CONFLICT_RESOLVER_STATE,
+            );
+            if (isConflictResolverRunning) {
+                return;
+            }
+        }
+
+        runInAction(() => {
+            this.conflicts = conflicts;
+            this.conflictsLoading = false;
         });
     }
 }

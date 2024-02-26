@@ -7,7 +7,7 @@
  * `./src/main.js` using webpack. This gives us some performance wins.
  */
 import path from 'path';
-import { app, BrowserWindow, shell } from 'electron';
+import { app, BrowserWindow, globalShortcut, shell } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import MenuBuilder from './menu';
@@ -47,6 +47,8 @@ if (isDebug) {
     require('electron-debug')();
 }
 
+// app.commandLine.appendSwitch('js-flags', '--max-old-space-size=1536');
+
 const createWindow = () => {
     const RESOURCES_PATH = app.isPackaged
         ? path.join(process.resourcesPath, 'assets')
@@ -65,6 +67,7 @@ const createWindow = () => {
         autoHideMenuBar: true,
         icon: getAssetPath('icon.png'),
         webPreferences: {
+            nodeIntegrationInWorker: true,
             preload: app.isPackaged
                 ? path.join(__dirname, 'preload.js')
                 : path.join(__dirname, '../../.erb/dll/preload.js'),
@@ -115,6 +118,20 @@ app.on('window-all-closed', () => {
 });
 
 app.on('ready', function () {
+    globalShortcut.register('tab', () => {
+        return false;
+    });
+
+    if (!isDebug) {
+        // Disable reload
+        globalShortcut.register('f5', () => {
+            return false;
+        });
+        globalShortcut.register('ctrl+r', () => {
+            return false;
+        });
+    }
+
     // Steam related
     resolveSteamPaths();
     resolveManagedPaths();
