@@ -1,5 +1,6 @@
 {
-    "description": "Mod organizer tool for Total War: WARHAMMER 3",
+    "name": "tww-mod-organizer",
+    "description": "Mod organizer tool for Total War: WARHAMMER 2 & 3",
     "keywords": [
         "mod organizer",
         "mod manager",
@@ -14,6 +15,7 @@
         "type": "git",
         "url": "git+https://github.com/ev3nst/tww-mod-organizer.git"
     },
+    "version": "0.0.1",
     "license": "MIT",
     "author": {
         "name": "Burak KARTAL",
@@ -57,12 +59,12 @@
         "electron-log": "^5.1.1",
         "electron-store": "^8.1.0",
         "electron-updater": "^6.1.8",
-        "fflate": "^0.8.2",
         "framer-motion": "^11.0.5",
         "mkdirp": "^3.0.1",
         "mobx": "^6.12.0",
         "mobx-react": "^9.1.0",
         "next-themes": "^0.2.1",
+        "node-7z": "^3.0.0",
         "react": "^18.2.0",
         "react-beautiful-dnd": "^13.1.1",
         "react-dom": "^18.2.0",
@@ -88,6 +90,7 @@
         "@types/webpack-bundle-analyzer": "^4.6.0",
         "@typescript-eslint/eslint-plugin": "^6.7.0",
         "@typescript-eslint/parser": "^6.7.0",
+        "@vercel/webpack-asset-relocator-loader": "^1.7.3",
         "autoprefixer": "^10.4.17",
         "browserslist-config-erb": "^0.0.3",
         "chalk": "^4.1.2",
@@ -115,7 +118,6 @@
         "html-webpack-plugin": "^5.5.3",
         "identity-obj-proxy": "^3.0.0",
         "mini-css-extract-plugin": "^2.7.6",
-        "node-loader": "^2.0.0",
         "postcss": "^8.4.14",
         "postcss-loader": "^7.0.0",
         "prettier": "^3.2.5",
@@ -139,7 +141,7 @@
     },
     "build": {
         "productName": "TWWModOrganizer",
-        "appId": "org.TWWModOrganizer",
+        "appId": "ev3nst.TWWModOrganizer",
         "asar": true,
         "asarUnpack": "**\\*.{node,dll}",
         "files": [

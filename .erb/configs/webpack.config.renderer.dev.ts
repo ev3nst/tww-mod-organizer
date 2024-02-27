@@ -100,7 +100,7 @@ const configuration: webpack.Configuration = {
             },
             {
                 test: /\.node$/,
-                use: 'node-loader',
+                use: '@vercel/webpack-asset-relocator-loader',
             },
             // Fonts
             {

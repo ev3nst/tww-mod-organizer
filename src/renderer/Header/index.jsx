@@ -6,7 +6,6 @@ import {
     DropdownTrigger,
     Dropdown,
     DropdownMenu,
-    Avatar,
     Button,
     Image,
 } from '@nextui-org/react';
@@ -141,15 +140,6 @@ const Header = () => {
                     Mod Count: {modFiles.files.length}
                 </Button>
                 <FilterMods />
-                <Avatar
-                    isBordered
-                    as="button"
-                    className="transition-transform"
-                    color="secondary"
-                    name="Jason Hughes"
-                    size="sm"
-                    src="https://i.pravatar.cc/150?u=a042581f4e29026704d"
-                />
             </NavbarContent>
         </Navbar>
     );

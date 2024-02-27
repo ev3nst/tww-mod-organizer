@@ -1,4 +1,4 @@
-import { app, ipcMain, shell } from 'electron';
+import { app, dialog, ipcMain, shell } from 'electron';
 import path from 'path';
 import fs from 'fs';
 
@@ -9,11 +9,15 @@ import { resolveModInstallationPath } from '../tools/resolveManagedPaths';
 export default function deleteMod() {
     ipcMain.handle('deleteMod', async (_e, modDetails) => {
         const modInstallationFolder = resolveModInstallationPath();
-        const modPath = path.join(modInstallationFolder, modDetails.title);
+        const managedGame = db.get(dbKeys.MANAGED_GAME);
+        const modPath = path.join(
+            modInstallationFolder,
+            managedGame,
+            modDetails.title,
+        );
+
         if (fs.existsSync(modPath)) {
             await shell.trashItem(modPath);
-
-            const managedGame = db.get(dbKeys.MANAGED_GAME);
             const modProfilePath = path.join(
                 app.getPath('userData'),
                 'profiles',
@@ -47,6 +51,14 @@ export default function deleteMod() {
                     );
                 }
             }
+
+            return true;
+        } else {
+            dialog.showErrorBox(
+                'Delete Mod',
+                'Expected mod folder was not found at :' + modPath,
+            );
+            return false;
         }
     });
 }

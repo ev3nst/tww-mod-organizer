@@ -51,7 +51,10 @@ export async function retrieveModProfile(profileName) {
             if (
                 loadProfileDataResolved.findIndex((v) => v.id === mf.id) === -1
             ) {
-                loadProfileDataResolved.push(mf);
+                loadProfileDataResolved.push({
+                    id: mf.id,
+                    active: true,
+                });
             }
         }
 

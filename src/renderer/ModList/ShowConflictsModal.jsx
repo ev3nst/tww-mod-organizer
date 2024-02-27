@@ -58,7 +58,7 @@ const ShowConflictsModal = ({
         <Modal size="5xl" isOpen hideCloseButton>
             <ModalContent>
                 <ModalHeader className="flex flex-col gap-1">
-                    <p>Change Priority</p>
+                    <p>Show Conflicts</p>
                     <em className="text-sm">{selectedModRow.title}</em>
                 </ModalHeader>
                 <ModalBody>

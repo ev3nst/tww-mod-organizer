@@ -57,14 +57,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
     pathDirname: (arg) => ipcRenderer.invoke('pathDirname', arg),
 
-    appDataPath: () => ipcRenderer.invoke('appDataPath'),
-
     openExternalLink: (url) => ipcRenderer.invoke('openExternalLink', url),
 
     showItemInFolder: (pathString) =>
         ipcRenderer.invoke('showItemInFolder', pathString),
 
     fsExists: (pathString) => ipcRenderer.invoke('fsExists', pathString),
-
-    electronExit: () => ipcRenderer.invoke('electronExit'),
 });

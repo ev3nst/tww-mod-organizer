@@ -7,6 +7,7 @@ import {
     TableRow,
     TableCell,
     Spinner,
+    Checkbox,
 } from '@nextui-org/react';
 import { runInAction, toJS } from 'mobx';
 import { observer } from 'mobx-react';
@@ -21,6 +22,7 @@ import ModListStyles from './ModListStyles';
 
 const columns = [
     { name: '#', uid: 'order', sortable: false },
+    { name: 'SELECTION', uid: 'selection', sortable: false },
     { name: 'TITLE', uid: 'title', sortable: false },
     { name: 'CATEGORIES', uid: 'categories', sortable: false },
     { name: 'CONFLICT', uid: 'conflict', sortable: false },
@@ -95,21 +97,27 @@ function ModList() {
         );
     }
 
-    items = items.sort((a, b) => {
-        let first = a[initialSort.column];
-        let second = b[initialSort.column];
-        if (initialSort.column === 'order') {
-            first = modFilesData.modProfileData.findIndex(function (modData) {
-                return modData.id === a.id;
-            });
-            second = modFilesData.modProfileData.findIndex(function (modData) {
-                return modData.id === b.id;
-            });
-        }
+    if (typeof modFilesData.modProfileData.findIndex !== 'undefined') {
+        items = items.sort((a, b) => {
+            let first = a[initialSort.column];
+            let second = b[initialSort.column];
+            if (initialSort.column === 'order') {
+                first = modFilesData.modProfileData.findIndex(
+                    function (modData) {
+                        return modData.id === a.id;
+                    },
+                );
+                second = modFilesData.modProfileData.findIndex(
+                    function (modData) {
+                        return modData.id === b.id;
+                    },
+                );
+            }
 
-        const cmp = first < second ? -1 : first > second ? 0 : 1;
-        return initialSort.direction === 'descending' ? -cmp : cmp;
-    });
+            const cmp = first < second ? -1 : first > second ? 0 : 1;
+            return initialSort.direction === 'descending' ? -cmp : cmp;
+        });
+    }
 
     if (modFilesData.filesLoading || modFilesData.modProfileLoading) {
         return <Spinner />;
@@ -123,37 +131,8 @@ function ModList() {
                 <Table
                     isCompact
                     removeWrapper
-                    checkboxesProps={ModListStyles.checkbox}
                     classNames={ModListStyles.table}
                     topContentPlacement="outside"
-                    selectionMode="multiple"
-                    selectedKeys={selectedKeys}
-                    selectionBehavior="toggle"
-                    onSelectionChange={async (keys) => {
-                        let selectedModIds = [];
-                        if (typeof keys === 'string' && keys === 'all') {
-                            selectedModIds = modFilesData.files.map(
-                                (mf) => mf.id,
-                            );
-                        } else {
-                            const selectedArr = Array.from(keys);
-                            const selectedModFiles = modFilesData.files.filter(
-                                (mf) => selectedArr.includes(mf.title),
-                            );
-                            selectedModIds = selectedModFiles.map(
-                                (smf) => smf.id,
-                            );
-                        }
-
-                        const updatedModProfileData =
-                            await window.electronAPI.setActiveMods(
-                                selectedModIds,
-                            );
-                        runInAction(() => {
-                            modFiles.modProfileData = updatedModProfileData;
-                            modFiles.tempModProfileData = updatedModProfileData;
-                        });
-                    }}
                 >
                     <TableHeader columns={columns}>
                         {(column) => (
@@ -172,7 +151,45 @@ function ModList() {
                                         : 'start'
                                 }
                             >
-                                {column.name}
+                                {column.uid === 'selection' ? (
+                                    <Checkbox
+                                        color="success"
+                                        isSelected={false}
+                                        onClick={async () => {
+                                            let selectedModIds = [];
+                                            if (
+                                                typeof modFiles.modProfileData !==
+                                                    'undefined' &&
+                                                typeof modFiles
+                                                    .modProfileData[0] !==
+                                                    'undefined'
+                                            ) {
+                                                if (
+                                                    modFiles.modProfileData[0]
+                                                        .active === false
+                                                ) {
+                                                    selectedModIds =
+                                                        modFilesData.files.map(
+                                                            (mf) => mf.id,
+                                                        );
+                                                }
+
+                                                const updatedModProfileData =
+                                                    await window.electronAPI.setActiveMods(
+                                                        selectedModIds,
+                                                    );
+                                                runInAction(() => {
+                                                    modFiles.modProfileData =
+                                                        updatedModProfileData;
+                                                    modFiles.tempModProfileData =
+                                                        updatedModProfileData;
+                                                });
+                                            }
+                                        }}
+                                    />
+                                ) : (
+                                    column.name
+                                )}
                             </TableColumn>
                         )}
                     </TableHeader>
@@ -194,6 +211,58 @@ function ModList() {
                                             <ModListCell
                                                 row={item}
                                                 columnKey={columnKey}
+                                                onSelection={async (row) => {
+                                                    const selectedArr =
+                                                        modFiles.modProfileData
+                                                            .filter(
+                                                                (mfdf) =>
+                                                                    mfdf.active,
+                                                            )
+                                                            .map(
+                                                                (mfd) => mfd.id,
+                                                            );
+
+                                                    if (
+                                                        selectedArr.includes(
+                                                            row.id,
+                                                        )
+                                                    ) {
+                                                        selectedArr.splice(
+                                                            selectedArr.indexOf(
+                                                                row.id,
+                                                            ),
+                                                            1,
+                                                        );
+                                                    } else {
+                                                        selectedArr.push(
+                                                            row.id,
+                                                        );
+                                                    }
+
+                                                    let selectedModIds = [];
+                                                    const selectedModFiles =
+                                                        modFilesData.files.filter(
+                                                            (mf) =>
+                                                                selectedArr.includes(
+                                                                    mf.id,
+                                                                ),
+                                                        );
+                                                    selectedModIds =
+                                                        selectedModFiles.map(
+                                                            (smf) => smf.id,
+                                                        );
+
+                                                    const updatedModProfileData =
+                                                        await window.electronAPI.setActiveMods(
+                                                            selectedModIds,
+                                                        );
+                                                    runInAction(() => {
+                                                        modFiles.modProfileData =
+                                                            updatedModProfileData;
+                                                        modFiles.tempModProfileData =
+                                                            updatedModProfileData;
+                                                    });
+                                                }}
                                                 modProfileData={
                                                     modFilesData.modProfileData
                                                 }

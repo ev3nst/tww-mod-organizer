@@ -6,6 +6,7 @@ import {
     DropdownItem,
     Link,
     Image,
+    Checkbox,
 } from '@nextui-org/react';
 import { ArrowRightIcon, EyeIcon, TrashIcon } from '@heroicons/react/24/solid';
 import { VerticalDotsIcon } from '../Icons';
@@ -21,13 +22,40 @@ const ModListCell = ({
     modProfileData,
     conflictData,
     onShowConflictsModalClick,
+    onSelection,
 }) => {
+    const modIndex = modProfileData.findIndex(function (modData) {
+        return modData.id === row.id;
+    });
+    let isChecked = false;
+
+    if (
+        typeof modProfileData[modIndex] !== 'undefined' &&
+        typeof modProfileData[modIndex].active !== 'undefined' &&
+        modProfileData[modIndex].active === true
+    ) {
+        isChecked = true;
+    }
+
     switch (columnKey) {
+        case 'selection':
+            return (
+                <Checkbox
+                    color="success"
+                    isSelected={isChecked}
+                    onValueChange={() => {
+                        onSelection(row);
+                    }}
+                >
+                    <p></p>
+                </Checkbox>
+            );
+
         case 'order':
-            if (typeof modProfileData !== 'undefined') {
-                const modIndex = modProfileData.findIndex(function (modData) {
-                    return modData.id === row.id;
-                });
+            if (
+                typeof modProfileData !== 'undefined' &&
+                typeof modProfileData.findIndex !== 'undefined'
+            ) {
                 return <p className="text-center">{modIndex}</p>;
             }
 

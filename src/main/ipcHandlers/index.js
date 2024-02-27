@@ -1,7 +1,5 @@
 import dbGet from './dbGet';
 import dbSet from './dbSet';
-import appDataPath from './appDataPath';
-import electronExit from './electronExit';
 import openExternalLink from './openExternalLink';
 import fsExists from './fsExists';
 import getAvailableModProfiles from './getAvailableModProfiles';
@@ -31,8 +29,6 @@ BigInt.prototype.toJSON = function () {
 export default function ipcHandlers() {
     dbGet();
     dbSet();
-    appDataPath();
-    electronExit();
     openExternalLink();
     fsExists();
     getAvailableModProfiles();

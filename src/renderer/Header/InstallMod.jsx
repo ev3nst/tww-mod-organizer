@@ -150,12 +150,16 @@ const InstallMod = () => {
                                         installModConfirm.zipPath,
                                     );
 
+                                if (checkMultiplePack === null) {
+                                    return;
+                                }
+
                                 let packFileName = '';
                                 let hasMultiplePacks = false;
                                 if (
                                     typeof checkMultiplePack !== 'undefined' &&
                                     checkMultiplePack !== null &&
-                                    Array.isArray(checkMultiplePack)
+                                    typeof checkMultiplePack[0] !== 'undefined'
                                 ) {
                                     if (checkMultiplePack.length > 1) {
                                         hasMultiplePacks = true;
@@ -169,6 +173,7 @@ const InstallMod = () => {
                                         toast.error(
                                             'This zip file does not contain .pack file. ',
                                         );
+                                        return;
                                     }
                                 }
 
@@ -203,10 +208,21 @@ const InstallMod = () => {
                                         modName,
                                         installModConfirm.zipPath,
                                         installModConfirm.sameNameAction,
-                                        installModConfirm.packFileName,
+                                        installModConfirm.packFileName ||
+                                            packFileName,
                                     );
 
-                                if (typeof newModMeta.error !== 'undefined') {
+                                if (typeof newModMeta === 'undefined') {
+                                    toast.error(
+                                        'Unexpected error when unzipping the archive',
+                                    );
+                                    return;
+                                }
+
+                                if (
+                                    typeof newModMeta !== 'undefined' &&
+                                    typeof newModMeta.error !== 'undefined'
+                                ) {
                                     toast.error(newModMeta.error);
                                     return;
                                 }

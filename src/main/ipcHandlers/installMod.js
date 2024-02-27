@@ -1,18 +1,26 @@
-import { app, ipcMain, shell } from 'electron';
+import { app, dialog, ipcMain, shell } from 'electron';
 import path from 'path';
 import fs from 'fs';
 import { sync as mkdripSync } from 'mkdirp';
 import { ulid } from 'ulid';
+import { extractFileFromArchive } from '../tools/7z';
 
 import db from '../db';
 import dbKeys from '../db/keys';
 import { resolveModInstallationPath } from '../tools/resolveManagedPaths';
-import unzip from '../tools/unzip';
 
 export default function installMod() {
     ipcMain.handle(
         'installMod',
         async (_e, modName, zipPath, sameNameAction, packFileName) => {
+            if (
+                typeof packFileName === 'undefined' ||
+                packFileName === null ||
+                String(packFileName).length === 0
+            ) {
+                return;
+            }
+
             const managedGame = db.get(dbKeys.MANAGED_GAME);
             const modInstallationFolder = resolveModInstallationPath();
             const modInstallationPath = path.join(
@@ -35,8 +43,12 @@ export default function installMod() {
                     const existingFiles = fs
                         .readdirSync(modInstallationPath)
                         .filter((fileName) => !fileName.endsWith('.meta'));
-                    for (let efi = 0; efi < existingFiles.length; efi++) {
-                        const existingFilePath = existingFiles[efi];
+
+                    if (
+                        typeof existingFiles !== 'undefined' &&
+                        typeof existingFiles[0] !== 'undefined'
+                    ) {
+                        const existingFilePath = existingFiles[0];
                         await shell.trashItem(
                             path.join(modInstallationPath, existingFilePath),
                         );
@@ -74,15 +86,23 @@ export default function installMod() {
                     }
                 }
 
-                await unzip(zipPath, modInstallationPath, [packFileName]);
+                await extractFileFromArchive(
+                    zipPath,
+                    modInstallationPath,
+                    packFileName,
+                );
+
                 fs.writeFileSync(
                     path.join(modInstallationPath, 'tww-mod-organizer.meta'),
                     JSON.stringify(blankNewMeta),
                 );
-
                 return blankNewMeta;
             } catch (e) {
-                console.error(e);
+                dialog.showErrorBox(
+                    'Archive Error',
+                    'Unexpected error when unzipping the archive.',
+                );
+                console.log(e);
                 await shell.trashItem(modInstallationPath);
                 return {
                     error: 'Could not read archive.',

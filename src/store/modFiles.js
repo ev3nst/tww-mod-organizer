@@ -106,7 +106,6 @@ class ModFiles {
             this.conflictsLoading = true;
         });
         const conflicts = await window.electronAPI.getModConflicts();
-        console.log(conflicts, 'CONLICTS??');
         if (conflicts === null) {
             const isConflictResolverRunning = await window.electronAPI.dbGet(
                 dbKeys.PACK_CONFLICT_RESOLVER_STATE,

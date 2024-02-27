@@ -70,6 +70,15 @@ const configuration: webpack.Configuration = {
         }),
     ],
 
+    module: {
+        rules: [
+            {
+                test: /\.node$/,
+                use: '@vercel/webpack-asset-relocator-loader',
+            },
+        ],
+    },
+
     /**
      * Disables webpack processing of __dirname and __filename.
      * If you run the bundle in node.js it falls back to these values of node.js.

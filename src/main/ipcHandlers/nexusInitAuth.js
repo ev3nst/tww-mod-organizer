@@ -13,27 +13,20 @@ export default function nexusInitAuth() {
         });
 
         wss.on('open', function open() {
-            const nexusAuthParams = db.get(dbKeys.NEXUS_AUTH_PARAMS);
-            let requestData = {
-                id: ulid(),
-                token: null,
-                protocol: 2,
-            };
-
+            const nexusAPIKey = db.get(dbKeys.NEXUS_API_KEY);
             if (
-                typeof nexusAuthParams === 'undefined' ||
-                typeof nexusAuthParams.id === 'undefined'
+                typeof nexusAPIKey === 'undefined' ||
+                nexusAPIKey === null ||
+                String(nexusAPIKey).length === 0
             ) {
-                db.set(dbKeys.NEXUS_AUTH_PARAMS, requestData);
-            } else {
-                requestData = {
-                    id: nexusAuthParams.id,
-                    token: nexusAuthParams.token,
+                const requestData = {
+                    id: ulid(),
+                    token: null,
                     protocol: 2,
                 };
-            }
 
-            wss.send(JSON.stringify(requestData));
+                wss.send(JSON.stringify(requestData));
+            }
         });
 
         wss.on('message', function message(responseJson) {
@@ -50,7 +43,7 @@ export default function nexusInitAuth() {
                         token: response.data.connection_token,
                     };
                     db.set(dbKeys.NEXUS_AUTH_PARAMS, newNexusAuthParams);
-                    const tokenAuthRequestUrl = `https://www.nexusmods.com/sso?id=${newNexusAuthParams.id}&application=org.TWWModOrganizer`;
+                    const tokenAuthRequestUrl = `https://www.nexusmods.com/sso?id=${newNexusAuthParams.id}&application=tww`;
                     shell.openExternal(tokenAuthRequestUrl);
                 }
 

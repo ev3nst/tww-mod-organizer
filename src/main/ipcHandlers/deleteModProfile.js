@@ -19,6 +19,7 @@ export default async function deleteModProfile() {
 
         const profileFileName = `${profileName}.txt`;
         const profileFilePath = path.join(modProfilePath, profileFileName);
-        await shell.trashItem(profileFilePath);
+
+        return await shell.trashItem(profileFilePath);
     });
 }

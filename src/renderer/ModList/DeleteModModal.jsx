@@ -9,6 +9,7 @@ import {
 import { observer } from 'mobx-react';
 import { runInAction, toJS } from 'mobx';
 import modFiles from '../../store/modFiles';
+import toast from 'react-hot-toast';
 
 const DeleteModModal = ({ selectedModRow, onModalStateChange }) => {
     return (
@@ -33,9 +34,15 @@ const DeleteModModal = ({ selectedModRow, onModalStateChange }) => {
                                     selectedModRow.steamId,
                                 );
                             } else {
-                                await window.electronAPI.deleteMod(
-                                    selectedModRow,
-                                );
+                                const isDeleted =
+                                    await window.electronAPI.deleteMod(
+                                        selectedModRow,
+                                    );
+                                if (!isDeleted) {
+                                    toast.error(
+                                        'There was an unexpected error when deleting the selected mod.',
+                                    );
+                                }
                             }
 
                             const newModFiles = modFiles.files.filter(
