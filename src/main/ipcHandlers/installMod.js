@@ -96,6 +96,7 @@ export default function installMod() {
                     path.join(modInstallationPath, 'tww-mod-organizer.meta'),
                     JSON.stringify(blankNewMeta),
                 );
+
                 return blankNewMeta;
             } catch (e) {
                 dialog.showErrorBox(

@@ -49,7 +49,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
     getDownloadedArchives: () => ipcRenderer.invoke('getDownloadedArchives'),
 
-    getModConflicts: () => ipcRenderer.invoke('getModConflicts'),
+    getModConflicts: (forceClearCache) =>
+        ipcRenderer.invoke('getModConflicts', forceClearCache),
 
     dbGet: (key) => ipcRenderer.invoke('dbGet', key),
 
@@ -63,4 +64,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
         ipcRenderer.invoke('showItemInFolder', pathString),
 
     fsExists: (pathString) => ipcRenderer.invoke('fsExists', pathString),
+
+    getNexusDownloadLink: (downloadRequestLink) =>
+        ipcRenderer.invoke('getNexusDownloadLink', downloadRequestLink),
+
+    onNxmLinkReceived: (callback) =>
+        ipcRenderer.on('nxm-link-received', (_event, value) => callback(value)),
 });

@@ -1,4 +1,5 @@
-import { makeAutoObservable, runInAction } from 'mobx';
+import { makeAutoObservable, runInAction, toJS } from 'mobx';
+import axios from 'axios';
 
 class DownloadedFiles {
     files = [];
@@ -24,6 +25,30 @@ class DownloadedFiles {
             }
 
             this.loading = false;
+        });
+    }
+
+    async download(options) {
+        const { headers } = await axios({
+            url: options.url,
+            method: 'GET',
+            responseType: 'stream',
+            onDownloadProgress: function (progressData) {
+                console.log(progressData, 'progressData');
+            },
+        });
+
+        const totalLength = headers['content-length'];
+        let newFiles = toJS(this.files);
+        newFiles.push({
+            name: options.fileName,
+            size: totalLength,
+            date: null,
+            path: options.filePath,
+            progress: 0,
+        });
+        runInAction(() => {
+            this.files = newFiles;
         });
     }
 }

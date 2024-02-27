@@ -212,6 +212,8 @@ const InstallMod = () => {
                                             packFileName,
                                     );
 
+                                modFiles.getModConflicts(true);
+
                                 if (typeof newModMeta === 'undefined') {
                                     toast.error(
                                         'Unexpected error when unzipping the archive',

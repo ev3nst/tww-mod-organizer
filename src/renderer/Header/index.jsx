@@ -2,22 +2,15 @@ import {
     Navbar,
     NavbarContent,
     NavbarItem,
-    DropdownItem,
-    DropdownTrigger,
-    Dropdown,
-    DropdownMenu,
     Button,
     Image,
 } from '@nextui-org/react';
 import { observer } from 'mobx-react';
 import { ArrowPathIcon } from '@heroicons/react/24/solid';
-import { Activity, Flash, Server, TagUser, Scale } from '../Icons';
 
-import settings from '../../store/settings';
 import modFiles from '../../store/modFiles';
 import downloadedFiles from '../../store/downloadedFiles';
 import saveGameFiles from '../../store/saveGameFiles';
-import supportedGames from '../../store/supportedGames.js';
 
 import InstallMod from './InstallMod';
 import SwitchGames from './SwitchGames';
@@ -25,17 +18,6 @@ import Settings from './Settings';
 import FilterMods from './FilterMods';
 
 import appIcon from '../../../assets/icon.png';
-import nexusLogo from '../../../assets/nexus-logo.png';
-
-const icons = {
-    scale: <Scale className="text-warning" fill="currentColor" size={30} />,
-    activity: (
-        <Activity className="text-secondary" fill="currentColor" size={30} />
-    ),
-    flash: <Flash className="text-primary" fill="currentColor" size={30} />,
-    server: <Server className="text-success" fill="currentColor" size={30} />,
-    user: <TagUser className="text-danger" fill="currentColor" size={30} />,
-};
 
 const Header = () => {
     return (
@@ -49,6 +31,7 @@ const Header = () => {
             />
             <NavbarContent justify="start">
                 <SwitchGames />
+                {/*
                 <Dropdown>
                     <NavbarItem>
                         <DropdownTrigger>
@@ -112,6 +95,7 @@ const Header = () => {
                         </DropdownItem>
                     </DropdownMenu>
                 </Dropdown>
+                            */}
 
                 <NavbarContent className="hidden sm:flex">
                     <NavbarItem>
@@ -125,6 +109,7 @@ const Header = () => {
                                 await modFiles.getModProfile();
                                 await saveGameFiles.getFiles();
                                 await downloadedFiles.getFiles();
+                                modFiles.getModConflicts(true);
                             }}
                         >
                             <ArrowPathIcon className="h-5 w-5 text-green-500" />

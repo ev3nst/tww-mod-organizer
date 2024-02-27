@@ -17,6 +17,7 @@ import getSaveFiles from './getSaveFiles';
 import createModProfile from './createModProfile';
 import deleteModProfile from './deleteModProfile';
 import nexusInitAuth from './nexusInitAuth';
+import getNexusDownloadLink from './getNexusDownloadLink';
 import pathDirname from './pathDirname';
 import showItemInFolder from './showItemInFolder';
 import steamUnsubscribe from './steamUnsubscribe';
@@ -46,6 +47,7 @@ export default function ipcHandlers() {
     createModProfile();
     deleteModProfile();
     nexusInitAuth();
+    getNexusDownloadLink();
     pathDirname();
     showItemInFolder();
     steamUnsubscribe();

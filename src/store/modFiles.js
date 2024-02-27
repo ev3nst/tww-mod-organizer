@@ -101,11 +101,12 @@ class ModFiles {
         });
     }
 
-    async getModConflicts() {
+    async getModConflicts(forceClearCache) {
         runInAction(() => {
             this.conflictsLoading = true;
         });
-        const conflicts = await window.electronAPI.getModConflicts();
+        const conflicts =
+            await window.electronAPI.getModConflicts(forceClearCache);
         if (conflicts === null) {
             const isConflictResolverRunning = await window.electronAPI.dbGet(
                 dbKeys.PACK_CONFLICT_RESOLVER_STATE,

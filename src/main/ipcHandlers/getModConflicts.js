@@ -23,12 +23,11 @@ export default function getModConflicts() {
             dbKeys.PACK_CONFLICT_RESOLVER_TIMESTAMP,
         );
 
-        if (
-            (typeof packConflictResolveTimestamp === 'undefined' ||
-                packConflictResolveTimestamp === null ||
-                packConflictResolveTimestamp > tenMinutesAgo) &&
-            isAlreadyRunning
-        ) {
+        const isNotExpired =
+            typeof packConflictResolveTimestamp !== 'undefined' &&
+            packConflictResolveTimestamp !== null &&
+            packConflictResolveTimestamp > tenMinutesAgo;
+        if (forceClearCache === false && isNotExpired && isAlreadyRunning) {
             return null;
         }
 
