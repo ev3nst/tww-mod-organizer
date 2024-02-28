@@ -80,58 +80,54 @@ const InstallMod = () => {
                             }}
                         />
 
-                        {installModConfirm.showSameNameModInputs === true &&
-                            installModConfirm.sameNameAction === null && (
-                                <RadioGroup
-                                    label="Mod with same name exists. You can either select the options below or write a different name."
-                                    color="warning"
-                                    onChange={(event) => {
-                                        setInstallModConfirm({
-                                            ...installModConfirm,
-                                            sameNameAction: event.target.value,
-                                        });
-                                    }}
+                        {installModConfirm.showSameNameModInputs === true && (
+                            <RadioGroup
+                                label="Mod with same name exists. You can either select the options below or write a different name."
+                                color="warning"
+                                onChange={(event) => {
+                                    setInstallModConfirm({
+                                        ...installModConfirm,
+                                        sameNameAction: event.target.value,
+                                    });
+                                }}
+                            >
+                                <Radio
+                                    value="replace"
+                                    description="Replace the contents of the mod with the new archive."
                                 >
-                                    <Radio
-                                        value="replace"
-                                        description="Replace the contents of the mod with the new archive."
-                                    >
-                                        Replace
-                                    </Radio>
-                                    <Radio
-                                        className="hidden"
-                                        value="merge"
-                                        description="Merges the contents of the archive with the existing ones."
-                                    >
-                                        Merge
-                                    </Radio>
-                                </RadioGroup>
-                            )}
+                                    Replace
+                                </Radio>
+                                <Radio
+                                    className="hidden"
+                                    value="merge"
+                                    description="Merges the contents of the archive with the existing ones."
+                                >
+                                    Merge
+                                </Radio>
+                            </RadioGroup>
+                        )}
 
-                        {installModConfirm.showSameNameModInputs === false &&
-                            installModConfirm.hasMultiplePacks === true && (
-                                <RadioGroup
-                                    label="This archive contains multiple .pack files. They need to be installed separetely into their own unique mod folder. Choose which .pack file to install."
-                                    color="warning"
-                                    onChange={(event) => {
-                                        setInstallModConfirm({
-                                            ...installModConfirm,
-                                            packFileName: event.target.value,
-                                        });
-                                    }}
-                                >
-                                    {installModConfirm.multiplePacks.map(
-                                        (mp) => (
-                                            <Radio
-                                                key={`multiple_pack_radio_${mp}`}
-                                                value={mp}
-                                            >
-                                                {mp}
-                                            </Radio>
-                                        ),
-                                    )}
-                                </RadioGroup>
-                            )}
+                        {installModConfirm.hasMultiplePacks === true && (
+                            <RadioGroup
+                                label="This archive contains multiple .pack files. They can to be installed separetely into their own unique mod folder. Choose which .pack file to install."
+                                color="warning"
+                                onChange={(event) => {
+                                    setInstallModConfirm({
+                                        ...installModConfirm,
+                                        packFileName: event.target.value,
+                                    });
+                                }}
+                            >
+                                {installModConfirm.multiplePacks.map((mp) => (
+                                    <Radio
+                                        key={`multiple_pack_radio_${mp}`}
+                                        value={mp}
+                                    >
+                                        {mp}
+                                    </Radio>
+                                ))}
+                            </RadioGroup>
+                        )}
                     </ModalBody>
                     <ModalFooter>
                         <Button
@@ -145,31 +141,31 @@ const InstallMod = () => {
                                         modName,
                                     );
 
-                                const checkMultiplePack =
+                                const zipContents =
                                     await window.electronAPI.checkModZipFiles(
                                         installModConfirm.zipPath,
                                     );
 
-                                if (checkMultiplePack === null) {
+                                if (zipContents === null) {
                                     return;
                                 }
 
                                 let packFileName = '';
                                 let hasMultiplePacks = false;
                                 if (
-                                    typeof checkMultiplePack !== 'undefined' &&
-                                    checkMultiplePack !== null &&
-                                    typeof checkMultiplePack[0] !== 'undefined'
+                                    typeof zipContents !== 'undefined' &&
+                                    zipContents !== null &&
+                                    typeof zipContents[0] !== 'undefined'
                                 ) {
-                                    if (checkMultiplePack.length > 1) {
+                                    if (zipContents.length > 1) {
                                         hasMultiplePacks = true;
                                     }
 
-                                    if (checkMultiplePack.length === 1) {
-                                        packFileName = checkMultiplePack[0];
+                                    if (zipContents.length === 1) {
+                                        packFileName = zipContents[0];
                                     }
 
-                                    if (checkMultiplePack.length === 0) {
+                                    if (zipContents.length === 0) {
                                         toast.error(
                                             'This zip file does not contain .pack file. ',
                                         );
@@ -198,9 +194,25 @@ const InstallMod = () => {
                                         ...installModConfirm,
                                         showSameNameModInputs: false,
                                         hasMultiplePacks,
-                                        multiplePacks: checkMultiplePack,
+                                        packFileName,
+                                        multiplePacks: zipContents,
                                     });
                                     return;
+                                }
+
+                                if (
+                                    typeof installModConfirm.packFileName ===
+                                        'undefined' ||
+                                    installModConfirm.packFileName.length === 0
+                                ) {
+                                    if (zipContents.length > 1) {
+                                        setInstallModConfirm({
+                                            ...installModConfirm,
+                                            hasMultiplePacks: true,
+                                            multiplePacks: zipContents,
+                                        });
+                                        return;
+                                    }
                                 }
 
                                 const newModMeta =
@@ -211,8 +223,6 @@ const InstallMod = () => {
                                         installModConfirm.packFileName ||
                                             packFileName,
                                     );
-
-                                modFiles.getModConflicts(true);
 
                                 if (typeof newModMeta === 'undefined') {
                                     toast.error(
@@ -255,6 +265,7 @@ const InstallMod = () => {
                                     });
                                 }
 
+                                modFiles.getFiles();
                                 setInstallModConfirm({
                                     modInputKey: Date.now(),
                                     isModalOpen: false,

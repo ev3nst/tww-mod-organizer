@@ -45,7 +45,6 @@ const DeleteModModal = ({ selectedModRow, onModalStateChange }) => {
                                 }
                             }
 
-                            modFiles.getModConflicts(true);
                             const newModFiles = modFiles.files.filter(
                                 (mf) => mf.id !== selectedModRow.id,
                             );

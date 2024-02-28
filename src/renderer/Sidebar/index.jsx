@@ -1,7 +1,11 @@
-import { useEffect } from 'react';
-import { Tabs, Tab, Card, CardBody, Button } from '@nextui-org/react';
+import { useState } from 'react';
+import { Tabs, Tab, Card, CardBody, Button, Spinner } from '@nextui-org/react';
 import { FolderOpenIcon } from '@heroicons/react/24/solid';
+import { observer } from 'mobx-react';
+import { toJS } from 'mobx';
+
 import SaveGames from './SaveGames';
+import modFiles from '../../store/modFiles';
 
 /*
 function onNxmLinkReceived() {
@@ -36,7 +40,9 @@ function onNxmLinkReceived() {
 */
 
 function Sidebar() {
-    useEffect(() => {}, []);
+    const [isGameStarting, setIsGameStarting] = useState(false);
+    const modProfileData = toJS(modFiles.modProfileData);
+    const modListData = toJS(toJS(modFiles.files));
 
     return (
         <div className="flex flex-col justify-between h-full">
@@ -82,10 +88,23 @@ function Sidebar() {
                 </Tabs>
             </div>
             <Button
-                className="h-20	text-2xl ml-1 mt-5"
+                className={`h-20 text-2xl ml-1 mt-5 ${isGameStarting ? 'disabled' : ''}`}
                 size="lg"
                 color="primary"
                 variant="shadow"
+                endContent={
+                    isGameStarting ? (
+                        <Spinner color="white" size="sm" />
+                    ) : undefined
+                }
+                disabled={isGameStarting}
+                onClick={() => {
+                    window.electronAPI.startGame(modProfileData, modListData);
+                    setIsGameStarting(true);
+                    setTimeout(() => {
+                        setIsGameStarting(false);
+                    }, 4500);
+                }}
             >
                 LAUNCH
             </Button>
@@ -93,4 +112,4 @@ function Sidebar() {
     );
 }
 
-export default Sidebar;
+export default observer(Sidebar);

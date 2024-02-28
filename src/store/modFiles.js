@@ -108,12 +108,7 @@ class ModFiles {
         const conflicts =
             await window.electronAPI.getModConflicts(forceClearCache);
         if (conflicts === null) {
-            const isConflictResolverRunning = await window.electronAPI.dbGet(
-                dbKeys.PACK_CONFLICT_RESOLVER_STATE,
-            );
-            if (isConflictResolverRunning) {
-                return;
-            }
+            return;
         }
 
         runInAction(() => {

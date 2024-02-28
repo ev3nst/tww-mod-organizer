@@ -22,6 +22,7 @@ import pathDirname from './pathDirname';
 import showItemInFolder from './showItemInFolder';
 import steamUnsubscribe from './steamUnsubscribe';
 import getModConflicts from './getModConflicts';
+import startGame from './startGame';
 
 BigInt.prototype.toJSON = function () {
     return this.toString();
@@ -52,4 +53,5 @@ export default function ipcHandlers() {
     showItemInFolder();
     steamUnsubscribe();
     getModConflicts();
+    startGame();
 }

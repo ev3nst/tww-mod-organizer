@@ -125,6 +125,7 @@ function ModList() {
 
     return (
         <>
+            {modFilesData.conflicts.length > 0 && <div className="hidden" />}
             {modFilesData.searchFilter.length === 0 && <ModProfiles />}
             <div className="flex">
                 {modFilesData.searchFilter.length === 0 && <ModOrdering />}
@@ -265,6 +266,9 @@ function ModList() {
                                                 }}
                                                 modProfileData={
                                                     modFilesData.modProfileData
+                                                }
+                                                conflictsLoading={
+                                                    modFilesData.conflictsLoading
                                                 }
                                                 conflictData={
                                                     modFilesData.conflicts

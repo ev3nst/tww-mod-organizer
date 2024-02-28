@@ -54,6 +54,17 @@ const ShowConflictsModal = ({
         }
     }
 
+    const winKeys = Object.keys(win);
+    const loseKeys = Object.keys(lose);
+
+    // It is winnig againts upper files but in the end conflcit is won by 3rd party
+    for (let li = 0; li < loseKeys.length; li++) {
+        const loseKey = loseKeys[li];
+        if (winKeys.includes(loseKey)) {
+            winKeys.splice(winKeys.indexOf(loseKey), 1);
+        }
+    }
+
     return (
         <Modal size="5xl" isOpen hideCloseButton>
             <ModalContent>
@@ -70,14 +81,14 @@ const ShowConflictsModal = ({
                         <AccordionItem
                             key="win"
                             aria-label="Winning conflicts"
-                            title="Winning conflicts"
+                            title={`Winning conflicts ${winKeys.length > 0 ? ' - ' + winKeys.length : ''}`}
                         >
                             <ScrollShadow
                                 hideScrollBar
                                 className="max-h-[250px]"
                                 size={20}
                             >
-                                {Object.keys(win).map((winningFileName) => (
+                                {winKeys.map((winningFileName) => (
                                     <div
                                         className="mb-1"
                                         key={`conflict_modal_${selectedModRow.id}_${winningFileName}_win`}
@@ -105,14 +116,14 @@ const ShowConflictsModal = ({
                         <AccordionItem
                             key="lose"
                             aria-label="Losing conflicts"
-                            title="Losing conflicts"
+                            title={`Losing conflicts ${loseKeys.length > 0 ? ' - ' + loseKeys.length : ''}`}
                         >
                             <ScrollShadow
                                 hideScrollBar
                                 className="max-h-[250px]"
                                 size={20}
                             >
-                                {Object.keys(lose).map((losingFileName) => (
+                                {loseKeys.map((losingFileName) => (
                                     <div
                                         className="mb-1"
                                         key={`conflict_modal_${selectedModRow.id}_${losingFileName}_lose`}

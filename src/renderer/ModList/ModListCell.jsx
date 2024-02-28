@@ -7,6 +7,7 @@ import {
     Link,
     Image,
     Checkbox,
+    Spinner,
 } from '@nextui-org/react';
 import { ArrowRightIcon, EyeIcon, TrashIcon } from '@heroicons/react/24/solid';
 import { VerticalDotsIcon } from '../Icons';
@@ -21,6 +22,7 @@ const ModListCell = ({
     onChangePriorityModalClick,
     modProfileData,
     conflictData,
+    conflictsLoading,
     onShowConflictsModalClick,
     onSelection,
 }) => {
@@ -90,6 +92,14 @@ const ModListCell = ({
 
             return '';
         case 'conflict':
+            if (conflictsLoading) {
+                return (
+                    <div className="flex w-full items-center justify-center">
+                        <Spinner size="sm" />
+                    </div>
+                );
+            }
+
             if (
                 typeof row.packFileName !== 'undefined' &&
                 row.packFileName !== null &&

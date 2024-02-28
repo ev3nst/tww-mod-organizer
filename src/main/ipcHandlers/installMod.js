@@ -18,6 +18,10 @@ export default function installMod() {
                 packFileName === null ||
                 String(packFileName).length === 0
             ) {
+                dialog.showErrorBox(
+                    'App Error',
+                    'There was no file name sent.',
+                );
                 return;
             }
 
