@@ -176,6 +176,18 @@ export async function getWorkshopMods() {
 
         for (let smdi = 0; smdi < subscribedModDetails.length; smdi++) {
             const subscribedModDetail = subscribedModDetails[smdi];
+            const doesNeedUpdate = await steamClient.state(
+                managedGameDetails.steamId,
+                subscribedModDetail.steamId,
+            );
+
+            if (doesNeedUpdate === 8) {
+                await steamClient.updateItem(
+                    managedGameDetails.steamId,
+                    subscribedModDetail.steamId,
+                );
+            }
+
             const packFileName = (
                 await readdir(
                     path.join(

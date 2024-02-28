@@ -3,6 +3,7 @@ import { makeAutoObservable, runInAction } from 'mobx';
 class SaveGameFiles {
     files = [];
     loading = false;
+    startupSaveGame = null;
 
     constructor() {
         makeAutoObservable(this);

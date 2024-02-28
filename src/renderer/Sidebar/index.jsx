@@ -6,6 +6,7 @@ import { toJS } from 'mobx';
 
 import SaveGames from './SaveGames';
 import modFiles from '../../store/modFiles';
+import saveGameFiles from '../../store/saveGameFiles';
 
 /*
 function onNxmLinkReceived() {
@@ -99,7 +100,11 @@ function Sidebar() {
                 }
                 disabled={isGameStarting}
                 onClick={() => {
-                    window.electronAPI.startGame(modProfileData, modListData);
+                    window.electronAPI.startGame(
+                        modProfileData,
+                        modListData,
+                        saveGameFiles.startupSaveGame,
+                    );
                     setIsGameStarting(true);
                     setTimeout(() => {
                         setIsGameStarting(false);

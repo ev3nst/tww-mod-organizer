@@ -29,6 +29,20 @@ class SteamClient {
         const client = this.getClient(steamId);
         return await client.workshop.unsubscribe(BigInt(workshopItemId));
     }
+
+    async state(steamId, workshopItemId) {
+        const client = this.getClient(steamId);
+        return await client.workshop.state(BigInt(workshopItemId));
+    }
+
+    async updateItem(steamId, workshopItemId, updateDetails = undefined) {
+        const client = this.getClient(steamId);
+        return await client.workshop.updateItem(
+            BigInt(workshopItemId),
+            updateDetails,
+            steamId,
+        );
+    }
 }
 
 const steamClient = new SteamClient();

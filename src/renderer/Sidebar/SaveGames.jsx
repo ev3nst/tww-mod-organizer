@@ -14,7 +14,7 @@ import {
     Pagination,
     Spinner,
 } from '@nextui-org/react';
-import { toJS } from 'mobx';
+import { runInAction, toJS } from 'mobx';
 import { observer } from 'mobx-react';
 import { EyeIcon, TrashIcon } from '@heroicons/react/24/solid';
 import { VerticalDotsIcon } from '../Icons';
@@ -49,22 +49,25 @@ function SaveGames() {
         selectedSaveFiles: [],
     });
 
+    const sortedItems = useMemo(() => {
+        return [...saveGameFilesData.files].sort((a, b) => {
+            const first = a[sortDescriptor.column];
+            const second = b[sortDescriptor.column];
+            const cmp = first < second ? -1 : first > second ? 1 : 0;
+            return sortDescriptor.direction === 'descending' ? -cmp : cmp;
+        });
+    }, [
+        saveGameFilesData.files,
+        sortDescriptor.column,
+        sortDescriptor.direction,
+    ]);
+
     const items = useMemo(() => {
         const start = (page - 1) * rowsPerPage;
         const end = start + rowsPerPage;
 
-        return saveGameFilesData.files.slice(start, end);
-    }, [page, saveGameFilesData.files]);
-
-    const sortedItems = useMemo(() => {
-        return [...items].sort((a, b) => {
-            const first = a[sortDescriptor.column];
-            const second = b[sortDescriptor.column];
-            const cmp = first < second ? -1 : first > second ? 1 : 0;
-
-            return sortDescriptor.direction === 'descending' ? -cmp : cmp;
-        });
-    }, [sortDescriptor, items]);
+        return sortedItems.slice(start, end);
+    }, [page, sortedItems]);
 
     const renderCell = useCallback(
         (row, columnKey) => {
@@ -188,6 +191,16 @@ function SaveGames() {
         return <Spinner />;
     }
 
+    if (selectedKeys.size === 1) {
+        runInAction(() => {
+            saveGameFiles.startupSaveGame = Array.from(selectedKeys)[0];
+        });
+    } else {
+        runInAction(() => {
+            saveGameFiles.startupSaveGame = null;
+        });
+    }
+
     return (
         <>
             <Table
@@ -209,7 +222,7 @@ function SaveGames() {
                         <TableColumn
                             key={column.uid}
                             className={
-                                column.uid === 'size' || column.uid === 'date'
+                                column.uid === 'size'
                                     ? 'hidden 2xl:table-cell'
                                     : ''
                             }
@@ -222,12 +235,20 @@ function SaveGames() {
                         </TableColumn>
                     )}
                 </TableHeader>
-                <TableBody emptyContent="No files found" items={sortedItems}>
+                <TableBody emptyContent="No files found" items={items}>
                     {(item) => (
-                        <TableRow key={item.name}>
+                        <TableRow
+                            key={item.name}
+                            className={
+                                selectedKeys.size === 1 &&
+                                item.name === Array.from(selectedKeys)[0]
+                                    ? 'bg-success'
+                                    : ''
+                            }
+                        >
                             {(columnKey) => (
                                 <TableCell
-                                    className={`subpixel-antialiased text-xs ${columnKey === 'size' || columnKey === 'date' ? 'hidden 2xl:table-cell' : ''}`}
+                                    className={`subpixel-antialiased text-xs ${columnKey === 'size' ? 'hidden 2xl:table-cell' : ''}`}
                                 >
                                     {renderCell(item, columnKey)}
                                 </TableCell>

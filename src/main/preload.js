@@ -65,8 +65,13 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
     fsExists: (pathString) => ipcRenderer.invoke('fsExists', pathString),
 
-    startGame: (modProfileData, modListData) =>
-        ipcRenderer.invoke('startGame', modProfileData, modListData),
+    startGame: (modProfileData, modListData, startupSaveGame) =>
+        ipcRenderer.invoke(
+            'startGame',
+            modProfileData,
+            modListData,
+            startupSaveGame,
+        ),
 
     getNexusDownloadLink: (downloadRequestLink) =>
         ipcRenderer.invoke('getNexusDownloadLink', downloadRequestLink),
