@@ -1,8 +1,7 @@
-import sevenBin from '7zip-bin';
 import sevenZip from 'node-7z';
+import sevenBin from '7zip-bin';
 
 const pathTo7zip = sevenBin.path7za;
-
 export const listArchive = (zipPath, fileExts) => {
     return new Promise((resolve, reject) => {
         const files = [];
@@ -19,21 +18,27 @@ export const listArchive = (zipPath, fileExts) => {
             return resolve(files);
         });
 
-        listStream.on('error', (err) => reject(err));
+        listStream.on('error', (err) => {
+            console.error(err);
+            reject(err);
+        });
     });
 };
 
 export const extractFileFromArchive = (zipPath, destination, fileName) => {
     return new Promise((resolve, reject) => {
-        const myStream = sevenZip.extract(zipPath, destination, {
+        const extractStream = sevenZip.extract(zipPath, destination, {
             $bin: pathTo7zip,
             $raw: ['-i!' + fileName],
         });
 
-        myStream.on('end', function () {
+        extractStream.on('end', function () {
             resolve(true);
         });
 
-        myStream.on('error', (err) => reject(err));
+        extractStream.on('error', (err) => {
+            console.error(err);
+            reject(err);
+        });
     });
 };

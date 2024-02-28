@@ -103,10 +103,7 @@ export default function installMod() {
 
                 return blankNewMeta;
             } catch (e) {
-                dialog.showErrorBox(
-                    'Archive Error',
-                    'Unexpected error when unzipping the archive.',
-                );
+                dialog.showErrorBox('Archive Error', String(e));
                 console.log(e);
                 await shell.trashItem(modInstallationPath);
                 return {

@@ -41,8 +41,8 @@ const ChangePriorityModal = ({
                         onValueChange={(value) => {
                             const reg = new RegExp('^[0-9]+$');
                             if (value.match(reg) !== null) {
-                                if (value < 1) {
-                                    value = 1;
+                                if (value < 0) {
+                                    value = 0;
                                 }
 
                                 setToIndex(value);

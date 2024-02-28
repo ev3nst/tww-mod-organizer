@@ -5,6 +5,7 @@
 import path from 'path';
 import webpack from 'webpack';
 import { merge } from 'webpack-merge';
+import CopyPlugin from 'copy-webpack-plugin';
 import TerserPlugin from 'terser-webpack-plugin';
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
 import baseConfig from './webpack.config.base';
@@ -73,6 +74,15 @@ const configuration: webpack.Configuration = {
 
         new webpack.DefinePlugin({
             'process.type': '"browser"',
+        }),
+
+        new CopyPlugin({
+            patterns: [
+                {
+                    from: 'node_modules\\7zip-bin\\win\\x64\\7za.exe',
+                    to: 'win\\x64',
+                },
+            ],
         }),
     ],
 

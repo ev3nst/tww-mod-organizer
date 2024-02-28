@@ -15,7 +15,7 @@ import { readPack } from '../tools/pack-file-manager/pack-file';
 const TWENTY_MINUTES = 60 * 20 * 1000;
 const pool = workerpool.pool({
     workerType: 'thread',
-    maxWorkers: 1,
+    maxWorkers: 3,
 });
 
 function findPackFileCollisions(packsData) {

@@ -7,10 +7,7 @@ export default function checkModZipFiles() {
             const zipPackFiles = await listArchive(zipPath, '*.pack');
             return zipPackFiles;
         } catch (e) {
-            dialog.showErrorBox(
-                'Archive Error',
-                'App could not open the given archive.',
-            );
+            dialog.showErrorBox('Archive Error', String(e));
             console.log(e);
             return null;
         }
