@@ -1,3 +1,5 @@
+const BinaryFile = require('binary-file');
+const workerpool = require('workerpool');
 const wh3Schema = require('./schema_wh3.json');
 const wh2Schema = require('./schema_wh2.json');
 
@@ -298,8 +300,7 @@ const readLoc = async (
     }
 };
 
-export const readPack = async (
-    file,
+const readPack = async (
     modPath,
     baseModPath,
     packReadingOptions = { skipParsingTables: false },
@@ -309,6 +310,7 @@ export const readPack = async (
     let packHeader;
     const dependencyPacks = [];
 
+    const file = new BinaryFile(modPath, 'r', true);
     try {
         await file.open();
         const header = await file.read(4);
@@ -481,3 +483,7 @@ export const readPack = async (
         dependencyPacks,
     };
 };
+
+workerpool.worker({
+    readPack: readPack,
+});

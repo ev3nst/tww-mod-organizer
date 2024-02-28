@@ -1,4 +1,4 @@
-import workerpool from 'workerpool';
+const workerpool = require('workerpool');
 
 function findPackFileCollisions(packsData) {
     const conflicts = {};

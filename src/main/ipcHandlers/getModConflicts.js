@@ -1,71 +1,44 @@
-import { ipcMain } from 'electron';
+import { app, ipcMain } from 'electron';
 import path from 'path';
 import fs from 'fs';
 import { sync as mkdripSync } from 'mkdirp';
 import { readdir } from 'fs/promises';
 import workerpool from 'workerpool';
-import BinaryFile from 'binary-file';
 
 import db from '../db';
 import dbKeys from '../db/keys';
 import supportedGames from '../../store/supportedGames';
 import { resolveModInstallationPath } from '../tools/resolveManagedPaths';
-import { readPack } from '../tools/pack-file-manager/pack-file';
 
 const TWENTY_MINUTES = 60 * 20 * 1000;
-const pool = workerpool.pool({
+let readPackWorkerPath = path.resolve(
+    __dirname,
+    '../../../workers/pack-file-manager/pack-file.worker.js',
+);
+let findCollisionsWorkerPath = path.resolve(
+    __dirname,
+    '../../../workers/pack-file-manager/find-collisions.worker.js',
+);
+
+if (app.isPackaged) {
+    const workerJsPath = path.resolve(
+        __dirname,
+        '../../../app/dist/main/worker.js',
+    );
+
+    readPackWorkerPath = workerJsPath;
+    findCollisionsWorkerPath = workerJsPath;
+}
+
+const readPackPool = workerpool.pool(readPackWorkerPath, {
     workerType: 'thread',
     maxWorkers: 3,
 });
 
-function findPackFileCollisions(packsData) {
-    const conflicts = {};
-    for (let i = 0; i < packsData.length; i++) {
-        const pack = packsData[i];
-        for (let j = i + 1; j < packsData.length; j++) {
-            const packTwo = packsData[j];
-            if (pack === packTwo) continue;
-            if (pack.name === packTwo.name) continue;
-            if (pack.name === 'data.pack' || packTwo.name === 'data.pack')
-                continue;
-
-            for (const packFile of pack.packedFiles) {
-                if (packFile.name.includes('.rpfm_reserved')) continue;
-                for (const packTwoFile of packTwo.packedFiles) {
-                    if (packTwoFile.name.includes('.rpfm_reserved')) continue;
-                    if (packFile.name === packTwoFile.name) {
-                        if (typeof conflicts[pack.name] === 'undefined') {
-                            conflicts[pack.name] = {};
-                        }
-
-                        if (typeof conflicts[packTwo.name] === 'undefined') {
-                            conflicts[packTwo.name] = {};
-                        }
-
-                        if (
-                            typeof conflicts[pack.name][packFile.name] ===
-                            'undefined'
-                        ) {
-                            conflicts[pack.name][packFile.name] = [];
-                        }
-
-                        if (
-                            typeof conflicts[packTwo.name][packFile.name] ===
-                            'undefined'
-                        ) {
-                            conflicts[packTwo.name][packFile.name] = [];
-                        }
-
-                        conflicts[pack.name][packFile.name].push(packTwo.name);
-                        conflicts[packTwo.name][packFile.name].push(pack.name);
-                    }
-                }
-            }
-        }
-    }
-
-    return conflicts;
-}
+const findCollisionPool = workerpool.pool(findCollisionsWorkerPath, {
+    workerType: 'thread',
+    maxWorkers: 3,
+});
 
 export default function getModConflicts() {
     ipcMain.handle('getModConflicts', async (_e, forceClearCache = false) => {
@@ -171,21 +144,20 @@ export default function getModConflicts() {
         const packFileContents = [];
         for (let pfpi = 0; pfpi < packFilePaths.length; pfpi++) {
             const packFilePath = packFilePaths[pfpi];
-            const binaryFile = await new BinaryFile(packFilePath, 'r', true);
-            packFileContents.push(
-                await readPack(
-                    binaryFile,
-                    packFilePath,
-                    path.basename(packFilePath),
-                    { skipParsingTables: false },
-                    managedGameDetails.schemaName,
-                ),
-            );
+            const packContent = await readPackPool.exec('readPack', [
+                packFilePath,
+                path.basename(packFilePath),
+                { skipParsingTables: false },
+                managedGameDetails.schemaName,
+            ]);
+
+            packFileContents.push(packContent);
         }
 
-        const collisions = await pool.exec(findPackFileCollisions, [
-            packFileContents,
-        ]);
+        const collisions = await findCollisionPool.exec(
+            'findPackFileCollisions',
+            [packFileContents],
+        );
 
         db.set(dbKeys.PACK_CONFLICT_RESOLVER_DATA, collisions);
         db.set(dbKeys.PACK_CONFLICT_RESOLVER_STATE, false);
