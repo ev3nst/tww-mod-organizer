@@ -25,6 +25,12 @@ const configuration: webpack.Configuration = {
     entry: {
         main: path.join(webpackPaths.srcMainPath, 'main.js'),
         preload: path.join(webpackPaths.srcMainPath, 'preload.js'),
+        worker: path.join(
+            webpackPaths.rootPath,
+            'assets',
+            'workers',
+            'find-collisions.worker.js',
+        ),
     },
 
     output: {

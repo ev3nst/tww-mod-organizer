@@ -22,10 +22,11 @@ export default function startGame() {
                 managedGameDetails.slug,
             );
 
+            const reverseLoadOrder = modProfileData.slice().reverse();
             const currentGamePath = gameInstallationPaths[managedGame];
             let usedModsTxt = '';
-            for (let mpdi = 0; mpdi < modProfileData.length; mpdi++) {
-                const modProfData = modProfileData[mpdi];
+            for (let mpdi = 0; mpdi < reverseLoadOrder.length; mpdi++) {
+                const modProfData = reverseLoadOrder[mpdi];
                 if (modProfData.active === true) {
                     const modFileDetail = modListData.filter(
                         (mlf) => mlf.id === modProfData.id,

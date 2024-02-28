@@ -1,8 +1,3 @@
-const BinaryFile = require('binary-file');
-const nodePath = require('path');
-const fsExtra = require('fs-extra');
-const workerpool = require('workerpool');
-
 const wh3Schema = require('./schema_wh3.json');
 const wh2Schema = require('./schema_wh2.json');
 
@@ -303,8 +298,10 @@ const readLoc = async (
     }
 };
 
-const readPack = async (
+export const readPack = async (
+    file,
     modPath,
+    baseModPath,
     packReadingOptions = { skipParsingTables: false },
     currentGameSchema,
 ) => {
@@ -312,18 +309,8 @@ const readPack = async (
     let packHeader;
     const dependencyPacks = [];
 
-    let lastChangedLocal = -1;
     try {
-        lastChangedLocal = (await fsExtra.stat(modPath)).mtimeMs;
-    } catch (e) {
-        console.log(e);
-    }
-
-    let file;
-    try {
-        file = new BinaryFile(modPath, 'r', true);
         await file.open();
-
         const header = await file.read(4);
         if (header === null) throw new Error('header missing');
 
@@ -418,11 +405,10 @@ const readPack = async (
 
         if (packReadingOptions.skipParsingTables || dbPackFiles.length < 1) {
             return {
-                name: nodePath.basename(modPath),
+                name: baseModPath,
                 path: modPath,
                 packedFiles: pack_files,
                 packHeader,
-                lastChangedLocal,
                 readTables: [],
                 dependencyPacks,
             };
@@ -487,72 +473,11 @@ const readPack = async (
         readTables = packReadingOptions.tablesToRead;
 
     return {
-        name: nodePath.basename(modPath),
+        name: baseModPath,
         path: modPath,
         packedFiles: pack_files,
         packHeader,
-        lastChangedLocal,
         readTables,
         dependencyPacks,
     };
 };
-
-function findPackFileCollisions(packsData) {
-    const conflicts = {};
-    for (let i = 0; i < packsData.length; i++) {
-        const pack = packsData[i];
-        for (let j = i + 1; j < packsData.length; j++) {
-            // for (let j = 0; j < packsData.length; j++) {
-            const packTwo = packsData[j];
-            // for (const pack of packsData) {
-            // for (const packTwo of packsData) {
-            if (pack === packTwo) continue;
-            if (pack.name === packTwo.name) continue;
-            if (pack.name === 'data.pack' || packTwo.name === 'data.pack')
-                continue;
-
-            findPackFileCollisionsBetweenPacks(pack, packTwo, conflicts);
-        }
-    }
-
-    return conflicts;
-}
-
-function findPackFileCollisionsBetweenPacks(pack, packTwo, conflicts) {
-    for (const packFile of pack.packedFiles) {
-        if (packFile.name.includes('.rpfm_reserved')) continue;
-        for (const packTwoFile of packTwo.packedFiles) {
-            if (packTwoFile.name.includes('.rpfm_reserved')) continue;
-            if (packFile.name === packTwoFile.name) {
-                if (typeof conflicts[pack.name] === 'undefined') {
-                    conflicts[pack.name] = {};
-                }
-
-                if (typeof conflicts[packTwo.name] === 'undefined') {
-                    conflicts[packTwo.name] = {};
-                }
-
-                if (
-                    typeof conflicts[pack.name][packFile.name] === 'undefined'
-                ) {
-                    conflicts[pack.name][packFile.name] = [];
-                }
-
-                if (
-                    typeof conflicts[packTwo.name][packFile.name] ===
-                    'undefined'
-                ) {
-                    conflicts[packTwo.name][packFile.name] = [];
-                }
-
-                conflicts[pack.name][packFile.name].push(packTwo.name);
-                conflicts[packTwo.name][packFile.name].push(pack.name);
-            }
-        }
-    }
-}
-
-workerpool.worker({
-    readPack: readPack,
-    findPackFileCollisions: findPackFileCollisions,
-});

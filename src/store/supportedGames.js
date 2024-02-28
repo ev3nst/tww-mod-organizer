@@ -7,6 +7,7 @@ const supportedGames = [
         steamId: 594570,
         steamFolderName: 'Total War WARHAMMER II',
         nexusSlug: 'totalwarwarhammer2',
+        schemaName: 'wh2',
     },
     {
         name: 'Total War: WARHAMMER 3',
@@ -16,6 +17,7 @@ const supportedGames = [
         steamId: 1142710,
         steamFolderName: 'Total War WARHAMMER III',
         nexusSlug: 'totalwarwarhammer3',
+        schemaName: 'wh3',
     },
 ];
 

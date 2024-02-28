@@ -4,19 +4,68 @@ import fs from 'fs';
 import { sync as mkdripSync } from 'mkdirp';
 import { readdir } from 'fs/promises';
 import workerpool from 'workerpool';
+import BinaryFile from 'binary-file';
 
 import db from '../db';
 import dbKeys from '../db/keys';
 import supportedGames from '../../store/supportedGames';
 import { resolveModInstallationPath } from '../tools/resolveManagedPaths';
+import { readPack } from '../tools/pack-file-manager/pack-file';
 
 const TWENTY_MINUTES = 60 * 20 * 1000;
-const pool = workerpool.pool(
-    path.resolve(__dirname, '../pack-file-manager/pack-file.worker.js'),
-    {
-        workerType: 'thread',
-    },
-);
+const pool = workerpool.pool({
+    workerType: 'thread',
+    maxWorkers: 1,
+});
+
+function findPackFileCollisions(packsData) {
+    const conflicts = {};
+    for (let i = 0; i < packsData.length; i++) {
+        const pack = packsData[i];
+        for (let j = i + 1; j < packsData.length; j++) {
+            const packTwo = packsData[j];
+            if (pack === packTwo) continue;
+            if (pack.name === packTwo.name) continue;
+            if (pack.name === 'data.pack' || packTwo.name === 'data.pack')
+                continue;
+
+            for (const packFile of pack.packedFiles) {
+                if (packFile.name.includes('.rpfm_reserved')) continue;
+                for (const packTwoFile of packTwo.packedFiles) {
+                    if (packTwoFile.name.includes('.rpfm_reserved')) continue;
+                    if (packFile.name === packTwoFile.name) {
+                        if (typeof conflicts[pack.name] === 'undefined') {
+                            conflicts[pack.name] = {};
+                        }
+
+                        if (typeof conflicts[packTwo.name] === 'undefined') {
+                            conflicts[packTwo.name] = {};
+                        }
+
+                        if (
+                            typeof conflicts[pack.name][packFile.name] ===
+                            'undefined'
+                        ) {
+                            conflicts[pack.name][packFile.name] = [];
+                        }
+
+                        if (
+                            typeof conflicts[packTwo.name][packFile.name] ===
+                            'undefined'
+                        ) {
+                            conflicts[packTwo.name][packFile.name] = [];
+                        }
+
+                        conflicts[pack.name][packFile.name].push(packTwo.name);
+                        conflicts[packTwo.name][packFile.name].push(pack.name);
+                    }
+                }
+            }
+        }
+    }
+
+    return conflicts;
+}
 
 export default function getModConflicts() {
     ipcMain.handle('getModConflicts', async (_e, forceClearCache = false) => {
@@ -122,16 +171,19 @@ export default function getModConflicts() {
         const packFileContents = [];
         for (let pfpi = 0; pfpi < packFilePaths.length; pfpi++) {
             const packFilePath = packFilePaths[pfpi];
+            const binaryFile = await new BinaryFile(packFilePath, 'r', true);
             packFileContents.push(
-                await pool.exec('readPack', [
+                await readPack(
+                    binaryFile,
                     packFilePath,
+                    path.basename(packFilePath),
                     { skipParsingTables: false },
-                    managedGame === 'tww3' ? 'wh3' : 'wh2',
-                ]),
+                    managedGameDetails.schemaName,
+                ),
             );
         }
 
-        const collisions = await pool.exec('findPackFileCollisions', [
+        const collisions = await pool.exec(findPackFileCollisions, [
             packFileContents,
         ]);
 

@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 /**
  * This module executes inside of electron's main process. You can start
  * electron renderer process from here and communicate with the other processes
@@ -40,12 +41,15 @@ const gotTheLock = app.requestSingleInstanceLock();
 if (!gotTheLock) {
     app.quit();
 } else {
+    /*
     app.on('second-instance', (event, commandLine) => {
         // Someone tried to run a second instance, we should focus our window.
         if (mainWindow) {
             if (mainWindow.isMinimized()) mainWindow.restore();
             mainWindow.focus();
         }
+
+        
         // the commandLine is array of strings in which last element is deep link url
         dialog.showErrorBox(
             'Welcome Back',
@@ -53,8 +57,9 @@ if (!gotTheLock) {
         );
 
         // Yet to implement
-        // mainWindow.webContents.send('nxm-link-received', [event, commandLine]);
+        mainWindow.webContents.send('nxm-link-received', [event, commandLine]);
     });
+    */
 
     app.on('ready', function () {
         globalShortcut.register('tab', () => {
