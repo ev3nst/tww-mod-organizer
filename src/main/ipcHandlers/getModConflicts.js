@@ -13,6 +13,9 @@ import { resolveModInstallationPath } from '../tools/resolveManagedPaths';
 const TWENTY_MINUTES = 60 * 20 * 1000;
 const pool = workerpool.pool(
     path.resolve(__dirname, '../pack-file-manager/pack-file.worker.js'),
+    {
+        workerType: 'thread',
+    },
 );
 
 export default function getModConflicts() {
