@@ -14,7 +14,7 @@ import { observer } from 'mobx-react';
 import DeleteSaveFilesModal from './DeleteSaveFilesModal';
 import saveGameFiles from '../../store/saveGameFiles';
 import SidebarTableStyles from './SidebarTableStyles';
-import DownloadListCell from './DownloadListCell';
+import SaveGameListCell from './SaveGameListCell';
 
 const columns = [
     { name: 'NAME', uid: 'name', sortable: true },
@@ -145,7 +145,7 @@ function SaveGames() {
                                 <TableCell
                                     className={`subpixel-antialiased text-xs ${columnKey === 'size' ? 'hidden 2xl:table-cell' : ''}`}
                                 >
-                                    <DownloadListCell
+                                    <SaveGameListCell
                                         row={item}
                                         columnKey={columnKey}
                                         onDelete={() => {
