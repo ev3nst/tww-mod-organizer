@@ -18,8 +18,7 @@ class SaveGameFiles {
             if (
                 typeof saveFiles !== 'undefined' &&
                 saveFiles !== null &&
-                typeof saveFiles.length !== 'undefined' &&
-                saveFiles.length > 0
+                typeof saveFiles.length !== 'undefined'
             ) {
                 this.files = saveFiles;
             }

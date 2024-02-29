@@ -20,8 +20,7 @@ class DownloadedFiles {
             if (
                 typeof archives !== 'undefined' &&
                 archives !== null &&
-                typeof archives.length !== 'undefined' &&
-                archives.length > 0
+                typeof archives.length !== 'undefined'
             ) {
                 this.files = archives;
             }
