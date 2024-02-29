@@ -15,7 +15,11 @@ It's been made with steam in mind so a lot of background code relies on steam. I
 -   Steam integration (check updates, unsubcsribe, viewing mod pages via browser etc.)
 -   Save game managing, multiple deletion, starting with selected game from startup
 -   Installing manual mods within app with profile in mind. This ensures you do not have to extract mod files into to the game installation and possibly over complicating folder structure for further management
--   Nexus Mods integration - downloading directly with deep links, endorsing, checking for updates
+-   Nexus Mods integration - downloading directly with deep links
+
+## To-Do
+
+-   Nexus: endorsing, checking for updates
 
 There are some technical details i need to share;
 
