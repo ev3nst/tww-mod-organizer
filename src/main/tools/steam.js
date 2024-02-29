@@ -135,13 +135,13 @@ export async function getWorkshopMods() {
         managedGameDetails.steamId,
     );
 
-    subscribedModIds = subscribedModIds.map((id) => String(id));
+    let subscribedModIdsStr = subscribedModIds.map((id) => String(id));
     if (
         typeof dbSubscribedModIds === 'undefined' ||
         typeof dbSubscribedModIds[managedGame] === 'undefined' ||
         typeof dbSubscribedModDetails === 'undefined' ||
         typeof dbSubscribedModDetails[managedGame] === 'undefined' ||
-        !arrayEquals(subscribedModIds, dbSubscribedModIds[managedGame])
+        !arrayEquals(subscribedModIdsStr, dbSubscribedModIds)
     ) {
         db.set(dbKeys.STEAM_WORKSHOP_IDS, {
             ...dbSubscribedModIds,
