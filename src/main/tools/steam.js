@@ -131,10 +131,11 @@ export async function getWorkshopMods() {
     const gameInstallationPaths = db.get(dbKeys.GAME_INSTALL_PATHS);
     const dbSubscribedModIds = db.get(dbKeys.STEAM_WORKSHOP_IDS);
     const dbSubscribedModDetails = db.get(dbKeys.STEAM_WORKSHOP_DETAILS);
-    const subscribedModIds = await steamClient.getSubscribedItems(
+    let subscribedModIds = await steamClient.getSubscribedItems(
         managedGameDetails.steamId,
     );
 
+    subscribedModIds = subscribedModIds.map((id) => String(id));
     if (
         typeof dbSubscribedModIds === 'undefined' ||
         typeof dbSubscribedModIds[managedGame] === 'undefined' ||

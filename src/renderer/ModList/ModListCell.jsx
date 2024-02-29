@@ -1,3 +1,4 @@
+/* eslint-disable no-case-declarations */
 import {
     Button,
     DropdownTrigger,
@@ -18,23 +19,24 @@ import { capitalize } from '../../helpers/util';
 const ModListCell = ({
     row,
     columnKey,
+    modFilesData,
     onDeleteModalClick,
     onChangePriorityModalClick,
-    modProfileData,
-    conflictData,
-    conflictsLoading,
     onShowConflictsModalClick,
     onSelection,
 }) => {
-    const modIndex = modProfileData.findIndex(function (modData) {
-        return modData.id === row.id;
-    });
+    const currentPriority = modFilesData.modProfileData.findIndex(
+        function (modData) {
+            return modData.id === row.id;
+        },
+    );
     let isChecked = false;
 
     if (
-        typeof modProfileData[modIndex] !== 'undefined' &&
-        typeof modProfileData[modIndex].active !== 'undefined' &&
-        modProfileData[modIndex].active === true
+        typeof modFilesData.modProfileData[currentPriority] !== 'undefined' &&
+        typeof modFilesData.modProfileData[currentPriority].active !==
+            'undefined' &&
+        modFilesData.modProfileData[currentPriority].active === true
     ) {
         isChecked = true;
     }
@@ -55,10 +57,10 @@ const ModListCell = ({
 
         case 'order':
             if (
-                typeof modProfileData !== 'undefined' &&
-                typeof modProfileData.findIndex !== 'undefined'
+                typeof modFilesData.modProfileData !== 'undefined' &&
+                typeof modFilesData.modProfileData.findIndex !== 'undefined'
             ) {
-                return <p className="text-center">{modIndex}</p>;
+                return <p className="text-center">{currentPriority}</p>;
             }
 
             return '';
@@ -83,7 +85,9 @@ const ModListCell = ({
                     <div>
                         {row.categories.map((category) => (
                             <p key={`mod_list_${row.title}_categories`}>
-                                {capitalize(category)}
+                                {capitalize(category) === 'Ui'
+                                    ? 'UI'
+                                    : capitalize(category)}
                             </p>
                         ))}
                     </div>
@@ -92,7 +96,7 @@ const ModListCell = ({
 
             return '';
         case 'conflict':
-            if (conflictsLoading) {
+            if (modFilesData.conflictsLoading) {
                 return (
                     <div className="flex w-full items-center justify-center">
                         <Spinner size="sm" />
@@ -104,12 +108,84 @@ const ModListCell = ({
                 typeof row.packFileName !== 'undefined' &&
                 row.packFileName !== null &&
                 String(row.packFileName).length > 0 &&
-                typeof conflictData !== 'undefined' &&
-                typeof conflictData[row.packFileName] !== 'undefined'
+                typeof modFilesData.conflicts !== 'undefined' &&
+                typeof modFilesData.conflicts[row.packFileName] !== 'undefined'
             ) {
-                const conflictedFilesLength = Object.keys(
-                    conflictData[row.packFileName],
-                ).length;
+                const win = {};
+                const lose = {};
+                for (const packFileName in modFilesData.conflicts[
+                    row.packFileName
+                ]) {
+                    if (
+                        Object.hasOwnProperty.call(
+                            modFilesData.conflicts[row.packFileName],
+                            packFileName,
+                        )
+                    ) {
+                        const otherModPacks =
+                            modFilesData.conflicts[row.packFileName][
+                                packFileName
+                            ];
+                        const otherModPacksKeys = otherModPacks;
+
+                        for (
+                            let ompi = 0;
+                            ompi < otherModPacksKeys.length;
+                            ompi++
+                        ) {
+                            const otherModPack = otherModPacksKeys[ompi];
+                            const index = modFilesData.files.findIndex((mf) => {
+                                return mf.packFileName === otherModPack;
+                            });
+
+                            // This pack has been read for conflict but somehow doesnt exists in load order ?
+                            // Needs more debugging
+                            if (
+                                typeof modFilesData.files[index] ===
+                                    'undefined' ||
+                                index === null
+                            ) {
+                                continue;
+                            }
+
+                            const conflictedModPriority =
+                                modFilesData.modProfileData.findIndex(
+                                    function (modData) {
+                                        return (
+                                            modData.id ===
+                                            modFilesData.files[index].id
+                                        );
+                                    },
+                                );
+                            if (currentPriority > conflictedModPriority) {
+                                if (typeof win[packFileName] === 'undefined') {
+                                    win[packFileName] = [];
+                                }
+                                win[packFileName].push(
+                                    modFilesData.files[index].title,
+                                );
+                            } else {
+                                if (typeof lose[packFileName] === 'undefined') {
+                                    lose[packFileName] = [];
+                                }
+                                lose[packFileName].push(
+                                    modFilesData.files[index].title,
+                                );
+                            }
+                        }
+                    }
+                }
+
+                const winKeys = Object.keys(win);
+                const loseKeys = Object.keys(lose);
+
+                // It is winnig againts upper files but in the end conflcit is won by 3rd party
+                for (let li = 0; li < loseKeys.length; li++) {
+                    const loseKey = loseKeys[li];
+                    if (winKeys.includes(loseKey)) {
+                        winKeys.splice(winKeys.indexOf(loseKey), 1);
+                    }
+                }
 
                 return (
                     <Link
@@ -118,11 +194,22 @@ const ModListCell = ({
                             onShowConflictsModalClick({
                                 isOpen: true,
                                 selectedModRow: row,
-                                conflicts: conflictData[row.packFileName],
+                                win,
+                                winKeys,
+                                lose,
+                                loseKeys,
                             });
                         }}
                     >
-                        {conflictedFilesLength}
+                        {winKeys.length > 0 && (
+                            <p className="text-success">{winKeys.length}</p>
+                        )}
+                        {winKeys.length > 0 && loseKeys.length > 0 && (
+                            <span className="mx-1 text-white">-</span>
+                        )}
+                        {loseKeys.length > 0 && (
+                            <p className="text-danger">{loseKeys.length}</p>
+                        )}
                     </Link>
                 );
             }
@@ -217,11 +304,12 @@ const ModListCell = ({
 
                             <DropdownItem
                                 onClick={() => {
-                                    const modIndex = modProfileData.findIndex(
-                                        function (modData) {
-                                            return modData.id === row.id;
-                                        },
-                                    );
+                                    const modIndex =
+                                        modFilesData.modProfileData.findIndex(
+                                            function (modData) {
+                                                return modData.id === row.id;
+                                            },
+                                        );
                                     onChangePriorityModalClick({
                                         isOpen: true,
                                         selectedModRow: row,

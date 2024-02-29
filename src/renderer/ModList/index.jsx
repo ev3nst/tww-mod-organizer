@@ -85,7 +85,10 @@ function ModList() {
     const [changeConflictModalState, setShowConflictsModalClick] = useState({
         isOpen: false,
         selectedModRow: null,
-        conflicts: [],
+        win: {},
+        winKeys: [],
+        lose: {},
+        loseKeys: [],
     });
 
     let items = modFilesData.files.slice();
@@ -212,6 +215,7 @@ function ModList() {
                                             <ModListCell
                                                 row={item}
                                                 columnKey={columnKey}
+                                                modFilesData={modFilesData}
                                                 onSelection={async (row) => {
                                                     const selectedArr =
                                                         modFiles.modProfileData
@@ -264,15 +268,6 @@ function ModList() {
                                                             updatedModProfileData;
                                                     });
                                                 }}
-                                                modProfileData={
-                                                    modFilesData.modProfileData
-                                                }
-                                                conflictsLoading={
-                                                    modFilesData.conflictsLoading
-                                                }
-                                                conflictData={
-                                                    modFilesData.conflicts
-                                                }
                                                 onDeleteModalClick={(
                                                     deleteModModalState,
                                                 ) => {
@@ -357,8 +352,7 @@ function ModList() {
                 {changeConflictModalState.isOpen && (
                     <ShowConflictsModal
                         selectedModRow={changeConflictModalState.selectedModRow}
-                        conflicts={changeConflictModalState.conflicts}
-                        modFilesData={modFilesData}
+                        state={changeConflictModalState}
                         onModalStateChange={(newState) => {
                             setShowConflictsModalClick(newState);
                         }}
