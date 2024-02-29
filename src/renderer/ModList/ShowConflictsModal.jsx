@@ -35,6 +35,15 @@ const ShowConflictsModal = ({
                     return mf.packFileName === otherModPack;
                 });
 
+                // This pack has been read for conflict but somehow doesnt exists in load order ?
+                // Needs more debugging
+                if (
+                    typeof modFilesData.files[index] === 'undefined' ||
+                    index === null
+                ) {
+                    continue;
+                }
+
                 const conflictedModPriority =
                     modFilesData.modProfileData.findIndex(function (modData) {
                         return modData.id === modFilesData.files[index].id;
