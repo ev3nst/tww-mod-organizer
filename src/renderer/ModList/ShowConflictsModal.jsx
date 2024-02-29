@@ -84,7 +84,7 @@ const ShowConflictsModal = ({ selectedModRow, onModalStateChange, state }) => {
                                             (otherModPackName) => (
                                                 <em
                                                     key={`conflict_modal_${selectedModRow.id}_${losingFileName}_${otherModPackName}`}
-                                                    className="pl-5 text-sm"
+                                                    className="pl-5 text-sm block"
                                                 >
                                                     {otherModPackName}
                                                 </em>
