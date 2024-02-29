@@ -34,6 +34,13 @@ const DownloadListCell = ({ row, columnKey, selectedKeys, onInstall }) => {
 
             return <p>{readableFileSize(row.size || row.total)}</p>;
         case 'actions':
+            if (
+                typeof row.progress !== 'undefined' &&
+                row.progress * 100 !== 100
+            ) {
+                return '';
+            }
+
             return (
                 <div className="relative flex justify-end items-center gap-2">
                     <Dropdown className="bg-background border-1 border-default-200">
