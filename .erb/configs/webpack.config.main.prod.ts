@@ -87,8 +87,17 @@ const configuration: webpack.Configuration = {
         new CopyPlugin({
             patterns: [
                 {
-                    from: 'node_modules\\7zip-bin\\win\\x64\\7za.exe',
-                    to: 'win\\x64',
+                    from: 'node_modules\\7z-bin\\win32\\7z.exe',
+                    to: 'win32',
+                },
+            ],
+        }),
+
+        new CopyPlugin({
+            patterns: [
+                {
+                    from: 'node_modules\\7z-bin\\License.txt',
+                    to: 'win32',
                 },
             ],
         }),

@@ -52,6 +52,7 @@
         ]
     },
     "dependencies": {
+        "7z-bin": "https://github.com/Nexus-Mods/7z-bin.git",
         "@heroicons/react": "^2.1.1",
         "@nextui-org/react": "^2.2.9",
         "axios": "^1.6.7",

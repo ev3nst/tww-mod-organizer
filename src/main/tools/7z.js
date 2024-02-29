@@ -1,7 +1,6 @@
 import sevenZip from 'node-7z';
-import sevenBin from '7zip-bin';
+import pathTo7zip from '7z-bin';
 
-const pathTo7zip = sevenBin.path7za;
 export const listArchive = (zipPath, fileExts) => {
     return new Promise((resolve, reject) => {
         const files = [];

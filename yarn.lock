@@ -5,6 +5,15 @@ __metadata:
   version: 6
   cacheKey: 8
 
+"7z-bin@https://github.com/Nexus-Mods/7z-bin.git":
+  version: 23.0.1
+  resolution: "7z-bin@https://github.com/Nexus-Mods/7z-bin.git#commit=09c2bc201f8d00860ffa28b2decd7db26d62d115"
+  bin:
+    7z: ./bin/7z
+  checksum: b19303ad14be35e61bb0c172b587a9b465a0babfbbdea5d93dc86e8c5045e1debbca354e7a15b9707502531bb74d31b40cda6f4741dee443f2678aa9fa1927c9
+  languageName: node
+  linkType: hard
+
 "7zip-bin@npm:~5.2.0":
   version: 5.2.0
   resolution: "7zip-bin@npm:5.2.0"
@@ -14448,6 +14457,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "tww-mod-organizer@workspace:."
   dependencies:
+    7z-bin: "https://github.com/Nexus-Mods/7z-bin.git"
     "@electron/notarize": ^2.1.0
     "@electron/rebuild": ^3.3.0
     "@heroicons/react": ^2.1.1

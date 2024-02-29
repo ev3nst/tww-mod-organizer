@@ -50,7 +50,10 @@ async function nxmLinkHandler(downloadRequestLink, onSameExits) {
         const generatedLink =
             await window.electronAPI.getNexusDownloadLink(requestOptions);
         const generatedLinkURL = new URL(generatedLink);
-        const fileName = generatedLinkURL.pathname.split('/')[3];
+        const generatedLinkURLExp = generatedLinkURL.pathname.split('/');
+        const fileName = decodeURI(
+            generatedLinkURLExp[generatedLinkURLExp.length - 1],
+        );
 
         const downloadsPath = await window.electronAPI.dbGet(
             dbKeys.MOD_DOWNLOAD_FOLDER,
