@@ -49,6 +49,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
     getDownloadedArchives: () => ipcRenderer.invoke('getDownloadedArchives'),
 
+    deleteDownloadFiles: (deleteFilePaths) =>
+        ipcRenderer.invoke('deleteDownloadFiles', deleteFilePaths),
+
     getModConflicts: (forceClearCache) =>
         ipcRenderer.invoke('getModConflicts', forceClearCache),
 
@@ -75,6 +78,17 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
     getNexusDownloadLink: (downloadRequestLink) =>
         ipcRenderer.invoke('getNexusDownloadLink', downloadRequestLink),
+
+    checkExistingDownload: (downloadPath) =>
+        ipcRenderer.invoke('checkExistingDownload', downloadPath),
+
+    streamDownload: (options, downloadPath) =>
+        ipcRenderer.invoke('streamDownload', options, downloadPath),
+
+    onStreamDownloadProgress: (callback) =>
+        ipcRenderer.on('onStreamDownloadProgress', (_event, value) =>
+            callback(value),
+        ),
 
     onNxmLinkReceived: (callback) =>
         ipcRenderer.on('nxm-link-received', (_event, value) => callback(value)),

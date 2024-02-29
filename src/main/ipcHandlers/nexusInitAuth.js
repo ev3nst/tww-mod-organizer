@@ -25,13 +25,18 @@ export default function nexusInitAuth() {
                     protocol: 2,
                 };
 
+                db.set(dbKeys.NEXUS_AUTH_PARAMS, {
+                    id: requestData.id,
+                    token: null,
+                });
+
                 wss.send(JSON.stringify(requestData));
             }
         });
 
         wss.on('message', function message(responseJson) {
             try {
-                const response = JSON.parse(responseJson);
+                const response = JSON.parse(responseJson.toString());
                 if (
                     typeof response !== 'undefined' &&
                     typeof response.data !== 'undefined' &&

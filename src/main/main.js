@@ -41,7 +41,6 @@ const gotTheLock = app.requestSingleInstanceLock();
 if (!gotTheLock) {
     app.quit();
 } else {
-    /*
     app.on('second-instance', (event, commandLine) => {
         // Someone tried to run a second instance, we should focus our window.
         if (mainWindow) {
@@ -49,17 +48,9 @@ if (!gotTheLock) {
             mainWindow.focus();
         }
 
-        
-        // the commandLine is array of strings in which last element is deep link url
-        dialog.showErrorBox(
-            'Welcome Back',
-            `You arrived from: ${commandLine.pop()}`,
-        );
-
-        // Yet to implement
-        mainWindow.webContents.send('nxm-link-received', [event, commandLine]);
+        const nxmLink = commandLine.pop();
+        mainWindow.webContents.send('nxm-link-received', nxmLink);
     });
-    */
 
     app.on('ready', function () {
         globalShortcut.register('tab', () => {

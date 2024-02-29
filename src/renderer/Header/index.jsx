@@ -1,25 +1,53 @@
+import { useEffect } from 'react';
 import {
     Navbar,
     NavbarContent,
     NavbarItem,
     Button,
     Image,
+    Dropdown,
+    DropdownMenu,
+    DropdownTrigger,
+    DropdownItem,
 } from '@nextui-org/react';
 import { observer } from 'mobx-react';
 import { ArrowPathIcon } from '@heroicons/react/24/solid';
 
+import settings from '../../store/settings';
 import modFiles from '../../store/modFiles';
 import downloadedFiles from '../../store/downloadedFiles';
 import saveGameFiles from '../../store/saveGameFiles';
+import supportedGames from '../../store/supportedGames.js';
 
 import InstallMod from './InstallMod';
 import SwitchGames from './SwitchGames';
 import Settings from './Settings';
 import FilterMods from './FilterMods';
 
+import { Activity, Flash, Server, TagUser, Scale } from '../Icons';
 import appIcon from '../../../assets/icon.png';
+import nexusLogo from '../../../assets/nexus-logo.png';
+import dbKeys from '../../main/db/keys';
+
+const icons = {
+    scale: <Scale className="text-warning" fill="currentColor" size={30} />,
+    activity: (
+        <Activity className="text-secondary" fill="currentColor" size={30} />
+    ),
+    flash: <Flash className="text-primary" fill="currentColor" size={30} />,
+    server: <Server className="text-success" fill="currentColor" size={30} />,
+    user: <TagUser className="text-danger" fill="currentColor" size={30} />,
+};
 
 const Header = () => {
+    useEffect(() => {
+        downloadedFiles.checkNexusAPI();
+        // failsafe check for db delay
+        setTimeout(async () => {
+            await downloadedFiles.checkNexusAPI();
+        }, 3000);
+    }, []);
+
     return (
         <Navbar maxWidth="full" isBordered>
             <Image
@@ -31,13 +59,12 @@ const Header = () => {
             />
             <NavbarContent justify="start">
                 <SwitchGames />
-                {/*
                 <Dropdown>
                     <NavbarItem>
                         <DropdownTrigger>
                             <Button
                                 disableRipple
-                                className="p-0 bg-transparent data-[hover=true]:bg-transparent"
+                                className={`p-0 bg-transparent data-[hover=true]:bg-transparent ${downloadedFiles.hasNexusAPI ? 'text-success' : ''}`}
                                 radius="sm"
                                 variant="light"
                                 startContent={
@@ -59,23 +86,33 @@ const Header = () => {
                             base: 'gap-4',
                         }}
                     >
-                        <DropdownItem
-                            key="autoscaling"
-                            description="Nexus related features such as endorsing, version checking and downloading directly with the app."
-                            startContent={icons.scale}
-                            onClick={() => {
-                                window.electronAPI.nexusInitAuth();
-                            }}
-                        >
-                            Login
-                        </DropdownItem>
-                        <DropdownItem
-                            key="usage_metrics"
-                            description="Disconnect app from your currently logged in account."
-                            startContent={icons.activity}
-                        >
-                            Disconnect
-                        </DropdownItem>
+                        {downloadedFiles.hasNexusAPI === false ? (
+                            <DropdownItem
+                                key="autoscaling"
+                                description="Nexus related features such as endorsing, version checking and downloading directly with the app."
+                                startContent={icons.scale}
+                                onClick={() => {
+                                    window.electronAPI.nexusInitAuth();
+                                }}
+                            >
+                                Login
+                            </DropdownItem>
+                        ) : (
+                            <DropdownItem
+                                key="usage_metrics"
+                                description="Disconnect app from your currently logged in account."
+                                startContent={icons.activity}
+                                onClick={async () => {
+                                    await window.electronAPI.dbSet(
+                                        dbKeys.NEXUS_API_KEY,
+                                        null,
+                                    );
+                                }}
+                            >
+                                Disconnect
+                            </DropdownItem>
+                        )}
+
                         <DropdownItem
                             key="production_ready"
                             description="Visit nexus mods for browsing."
@@ -95,7 +132,6 @@ const Header = () => {
                         </DropdownItem>
                     </DropdownMenu>
                 </Dropdown>
-                            */}
 
                 <NavbarContent className="hidden sm:flex">
                     <NavbarItem>
@@ -109,6 +145,7 @@ const Header = () => {
                                 await modFiles.getModProfile();
                                 await saveGameFiles.getFiles();
                                 await downloadedFiles.getFiles();
+                                await downloadedFiles.checkNexusAPI();
                                 modFiles.getModConflicts(true);
                             }}
                         >

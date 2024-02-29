@@ -22,7 +22,7 @@ function App() {
             <NextThemesProvider attribute="class" defaultTheme="dark">
                 <Toaster
                     toastOptions={{
-                        duration: 2000,
+                        duration: 3000,
                     }}
                 />
                 {managedGameIsNotEmpty ? (
@@ -35,7 +35,7 @@ function App() {
                         />
                         <Header />
                         <div className="fixed top-[100px] left-0 right-0 bottom-0 flex gap-4 px-10 mb-10">
-                            <Card className="w-8/12 bg-zinc-950/90 mr-5">
+                            <Card className="w-8/12 bg-zinc-950/85 mr-5">
                                 <CardBody>
                                     <ModList />
                                 </CardBody>

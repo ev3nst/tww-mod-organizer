@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
     Table,
     TableHeader,
@@ -6,22 +6,15 @@ import {
     TableBody,
     TableRow,
     TableCell,
-    Button,
-    DropdownTrigger,
-    Dropdown,
-    DropdownMenu,
-    DropdownItem,
     Pagination,
     Spinner,
 } from '@nextui-org/react';
 import { runInAction, toJS } from 'mobx';
 import { observer } from 'mobx-react';
-import { EyeIcon, TrashIcon } from '@heroicons/react/24/solid';
-import { VerticalDotsIcon } from '../Icons';
 import DeleteSaveFilesModal from './DeleteSaveFilesModal';
 import saveGameFiles from '../../store/saveGameFiles';
-import { readableFileSize } from '../../helpers/util';
-import SaveGameStyles from './SaveGameStyles';
+import SidebarTableStyles from './SidebarTableStyles';
+import DownloadListCell from './DownloadListCell';
 
 const columns = [
     { name: 'NAME', uid: 'name', sortable: true },
@@ -69,104 +62,6 @@ function SaveGames() {
         return sortedItems.slice(start, end);
     }, [page, sortedItems]);
 
-    const renderCell = useCallback(
-        (row, columnKey) => {
-            const cellValue = row[columnKey];
-            switch (columnKey) {
-                case 'name':
-                    return <p className="max-w-56">{cellValue}</p>;
-                case 'date':
-                    return <p>{new Date(cellValue).formattedDate()}</p>;
-                case 'size':
-                    return <p>{readableFileSize(cellValue)}</p>;
-                case 'actions':
-                    return (
-                        <div className="relative flex justify-end items-center gap-2">
-                            <Dropdown className="bg-background border-1 border-default-200">
-                                <DropdownTrigger>
-                                    <Button
-                                        isIconOnly
-                                        radius="full"
-                                        size="sm"
-                                        variant="light"
-                                    >
-                                        <VerticalDotsIcon className="text-default-400" />
-                                    </Button>
-                                </DropdownTrigger>
-                                <DropdownMenu>
-                                    <DropdownItem
-                                        startContent={
-                                            <EyeIcon className="h-4 w-4" />
-                                        }
-                                        onClick={() => {
-                                            window.electronAPI.showItemInFolder(
-                                                row.path,
-                                            );
-                                        }}
-                                    >
-                                        View
-                                    </DropdownItem>
-                                    <DropdownItem
-                                        startContent={
-                                            <TrashIcon className="h-4 w-4 text-danger" />
-                                        }
-                                        onClick={() => {
-                                            let selectedSaveFiles =
-                                                Array.from(selectedKeys);
-
-                                            // No selection made
-                                            if (
-                                                selectedSaveFiles.length === 0
-                                            ) {
-                                                selectedSaveFiles = [row.name];
-                                            }
-
-                                            let resolvedSaveFiles = [];
-                                            for (
-                                                let ssfi = 0;
-                                                ssfi < selectedSaveFiles.length;
-                                                ssfi++
-                                            ) {
-                                                const row =
-                                                    selectedSaveFiles[ssfi];
-                                                const index =
-                                                    saveGameFilesData.files.findIndex(
-                                                        (fi) => fi.name === row,
-                                                    );
-                                                if (index !== -1) {
-                                                    resolvedSaveFiles.push(row);
-                                                }
-                                            }
-
-                                            if (selectedKeys === 'all') {
-                                                resolvedSaveFiles =
-                                                    saveGameFilesData.files
-                                                        .slice(0, rowsPerPage)
-                                                        .map((sff) => sff.name);
-                                            }
-
-                                            if (resolvedSaveFiles.length > 0) {
-                                                setDeleteSaveFileModal({
-                                                    isOpen: true,
-                                                    selectedSaveFiles:
-                                                        resolvedSaveFiles,
-                                                });
-                                            }
-                                        }}
-                                    >
-                                        Delete
-                                    </DropdownItem>
-                                </DropdownMenu>
-                            </Dropdown>
-                        </div>
-                    );
-                default:
-                    return cellValue;
-            }
-        },
-        [saveGameFilesData.files, selectedKeys],
-    );
-
     const bottomContent = useMemo(() => {
         return (
             <div className="py-2 px-2 flex justify-between items-center">
@@ -208,8 +103,8 @@ function SaveGames() {
                 removeWrapper
                 bottomContent={bottomContent}
                 bottomContentPlacement="outside"
-                checkboxesProps={SaveGameStyles.checkbox}
-                classNames={SaveGameStyles.table}
+                checkboxesProps={SidebarTableStyles.checkbox}
+                classNames={SidebarTableStyles.table}
                 selectedKeys={selectedKeys}
                 selectionMode="multiple"
                 sortDescriptor={sortDescriptor}
@@ -250,7 +145,53 @@ function SaveGames() {
                                 <TableCell
                                     className={`subpixel-antialiased text-xs ${columnKey === 'size' ? 'hidden 2xl:table-cell' : ''}`}
                                 >
-                                    {renderCell(item, columnKey)}
+                                    <DownloadListCell
+                                        row={item}
+                                        columnKey={columnKey}
+                                        onDelete={() => {
+                                            let selectedSaveFiles =
+                                                Array.from(selectedKeys);
+
+                                            // No selection made
+                                            if (
+                                                selectedSaveFiles.length === 0
+                                            ) {
+                                                selectedSaveFiles = [item.name];
+                                            }
+
+                                            let resolvedSaveFiles = [];
+                                            for (
+                                                let ssfi = 0;
+                                                ssfi < selectedSaveFiles.length;
+                                                ssfi++
+                                            ) {
+                                                const row =
+                                                    selectedSaveFiles[ssfi];
+                                                const index =
+                                                    saveGameFilesData.files.findIndex(
+                                                        (fi) => fi.name === row,
+                                                    );
+                                                if (index !== -1) {
+                                                    resolvedSaveFiles.push(row);
+                                                }
+                                            }
+
+                                            if (selectedKeys === 'all') {
+                                                resolvedSaveFiles =
+                                                    saveGameFilesData.files
+                                                        .slice(0, rowsPerPage)
+                                                        .map((sff) => sff.name);
+                                            }
+
+                                            if (resolvedSaveFiles.length > 0) {
+                                                setDeleteSaveFileModal({
+                                                    isOpen: true,
+                                                    selectedSaveFiles:
+                                                        resolvedSaveFiles,
+                                                });
+                                            }
+                                        }}
+                                    />
                                 </TableCell>
                             )}
                         </TableRow>

@@ -5,8 +5,6 @@
 This is a simple mod manager with features only i needed and tailored towards what i imagined.
 Therefore please do not expect so much flexibility.
 
-Mod organizer requires [7z](https://www.7-zip.org/) installed on your pc.
-
 It's been made with steam in mind so a lot of background code relies on steam. I have not tested with any other type of installation.
 
 ## Features
@@ -17,9 +15,6 @@ It's been made with steam in mind so a lot of background code relies on steam. I
 -   Steam integration (check updates, unsubcsribe, viewing mod pages via browser etc.)
 -   Save game managing, multiple deletion, starting with selected game from startup
 -   Installing manual mods within app with profile in mind. This ensures you do not have to extract mod files into to the game installation and possibly over complicating folder structure for further management
-
-## To-Do
-
 -   Nexus Mods integration - downloading directly with deep links, endorsing, checking for updates
 
 There are some technical details i need to share;

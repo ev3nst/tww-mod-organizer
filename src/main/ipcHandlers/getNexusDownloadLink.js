@@ -1,11 +1,11 @@
 import { dialog, ipcMain } from 'electron';
 
-import WebSocket from 'ws';
 import db from '../db';
 import dbKeys from '../db/keys';
+import axios from 'axios';
 
 export default function getNexusDownloadLink() {
-    ipcMain.handle('getNexusDownloadLink', async (requestOptions) => {
+    ipcMain.handle('getNexusDownloadLink', async (_e, requestOptions) => {
         const nexusAPIKey = db.get(dbKeys.NEXUS_API_KEY);
         if (
             typeof nexusAPIKey === 'undefined' ||
@@ -36,40 +36,31 @@ export default function getNexusDownloadLink() {
             return false;
         }
 
-        return;
-        const nexusWSHost = 'wss://sso.nexusmods.com';
-        const wss = new WebSocket(nexusWSHost, {
-            perMessageDeflate: false,
-        });
-
-        wss.on('open', function open() {
-            if (
-                typeof nexusAPIKey === 'undefined' ||
-                nexusAPIKey === null ||
-                String(nexusAPIKey).length === 0
-            ) {
-                const requestData = {
-                    game_domain_name: requestOptions.gameDomainName,
-                    id: requestOptions.fileId,
-                    mod_id: requestOptions.modId,
+        const baseURL = 'https://api.nexusmods.com';
+        const requestDownloadUrlEndpoint = `/v1/games/${requestOptions.gameDomainName}/mods/${requestOptions.modId}/files/${requestOptions.fileId}/download_link.json`;
+        const response = await axios.get(
+            `${baseURL}${requestDownloadUrlEndpoint}`,
+            {
+                headers: {
+                    apiKey: nexusAPIKey,
+                },
+                params: {
                     key: requestOptions.downloadKey,
                     expires: requestOptions.downloadExpires,
-                };
+                },
+            },
+        );
 
-                wss.send(JSON.stringify(requestData));
-            }
-        });
-
-        wss.on('message', function message(responseJson) {
-            console.log(responseJson, 'resp jon?');
-        });
-
-        wss.on('error', (err) => {
-            console.warn(err);
-            dialog.showErrorBox(
-                'Nexus Error',
-                'App could not establish connection with nexus mods or received unexpected response.',
-            );
-        });
+        if (
+            typeof response !== 'undefined' &&
+            typeof response.data !== 'undefined' &&
+            typeof response.data[0] !== 'undefined' &&
+            typeof response.data[0].URI !== 'undefined'
+        ) {
+            return response.data[0].URI;
+        } else {
+            dialog.showErrorBox('Nexus Error', JSON.stringify(response));
+            return false;
+        }
     });
 }

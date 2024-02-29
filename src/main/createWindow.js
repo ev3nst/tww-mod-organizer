@@ -38,6 +38,26 @@ const createWindow = () => {
         htmlPath = `file://${path.resolve(__dirname, '../renderer/', 'index.html')}`;
     }
 
+    // Disable CORS
+    mainWindow.webContents.session.webRequest.onBeforeSendHeaders(
+        (details, callback) => {
+            callback({
+                requestHeaders: { Origin: '*', ...details.requestHeaders },
+            });
+        },
+    );
+
+    mainWindow.webContents.session.webRequest.onHeadersReceived(
+        (details, callback) => {
+            callback({
+                responseHeaders: {
+                    'Access-Control-Allow-Origin': ['*'],
+                    ...details.responseHeaders,
+                },
+            });
+        },
+    );
+
     mainWindow.removeMenu();
     mainWindow.loadURL(htmlPath);
     mainWindow.on('ready-to-show', () => {
