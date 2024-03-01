@@ -24,6 +24,7 @@ export default function startGame() {
 
             const reverseLoadOrder = modProfileData.slice().reverse();
             const currentGamePath = gameInstallationPaths[managedGame];
+            let addDirectoryTxt = '';
             let usedModsTxt = '';
             for (let mpdi = 0; mpdi < reverseLoadOrder.length; mpdi++) {
                 const modProfData = reverseLoadOrder[mpdi];
@@ -43,20 +44,23 @@ export default function startGame() {
                             String(managedGameDetails.steamId),
                             String(modFileDetail.steamId),
                         );
-                        usedModsTxt += `add_working_directory "${workshopModPath.replaceAll('\\', '/')}";\r`;
-                        usedModsTxt += `mod "${modFileDetail.packFileName}";\r`;
+                        addDirectoryTxt += `add_working_directory "${workshopModPath.replaceAll('\\', '/')}";\n`;
+                        usedModsTxt += `mod "${modFileDetail.packFileName}";\n`;
                     } else {
                         const manualModPath = path.join(
                             currentGameModPath,
                             modFileDetail.title,
                         );
-                        usedModsTxt += `add_working_directory "${manualModPath.replaceAll('\\', '/')}";\r`;
-                        usedModsTxt += `mod "${modFileDetail.packFileName}";\r`;
+                        addDirectoryTxt += `add_working_directory "${manualModPath.replaceAll('\\', '/')}";\n`;
+                        usedModsTxt += `mod "${modFileDetail.packFileName}";\n`;
                     }
                 }
             }
 
-            fs.writeFileSync(`${currentGamePath}\\used_mods.txt`, usedModsTxt);
+            fs.writeFileSync(
+                `${currentGamePath}\\used_mods.txt`,
+                addDirectoryTxt + usedModsTxt,
+            );
 
             let startGameCommand = `start /d "${currentGamePath}" ${managedGameDetails.exeName}.exe`;
             if (saveGame) {
