@@ -141,12 +141,13 @@ export async function getWorkshopMods() {
         typeof dbSubscribedModIds[managedGame] === 'undefined' ||
         typeof dbSubscribedModDetails === 'undefined' ||
         typeof dbSubscribedModDetails[managedGame] === 'undefined' ||
-        !arrayEquals(subscribedModIdsStr, dbSubscribedModIds)
+        !arrayEquals(subscribedModIdsStr, dbSubscribedModIds[managedGame])
     ) {
-        db.set(dbKeys.STEAM_WORKSHOP_IDS, {
+        const saveIds = {
             ...dbSubscribedModIds,
-            [managedGame]: subscribedModIds,
-        });
+            [managedGame]: subscribedModIdsStr,
+        };
+        db.set(dbKeys.STEAM_WORKSHOP_IDS, saveIds);
 
         const subscribedMods = await steamClient.getItems(
             managedGameDetails.steamId,
