@@ -185,7 +185,6 @@ const readDBPackedFiles = async (
 
             if (marker.toString('hex') === 'fdfefcff') {
                 const readUTF = readUTFStringFromBuffer(buffer, currentPos);
-                pack_file.guid = readUTF[0];
                 currentPos = readUTF[1];
             } else if (marker.toString('hex') === 'fcfdfeff') {
                 version = buffer.readInt32LE(currentPos);
@@ -211,25 +210,14 @@ const readDBPackedFiles = async (
         try {
             for (let i = 0; i < entryCount; i++) {
                 for (const field of dbversion.fields) {
-                    const { field_type, is_key } = field;
+                    const { field_type } = field;
 
                     const fieldsRet = await parseTypeBuffer(
                         buffer,
                         currentPos,
                         field_type,
                     );
-                    const fields = fieldsRet[0];
                     currentPos = fieldsRet[1];
-
-                    const schemaField = {
-                        type: field_type,
-                        fields,
-                    };
-                    if (is_key) {
-                        schemaField.isKey = true;
-                    }
-                    pack_file.schemaFields = pack_file.schemaFields || [];
-                    pack_file.schemaFields.push(schemaField);
                 }
             }
         } catch {
@@ -409,7 +397,7 @@ const readPack = async (
             return {
                 name: baseModPath,
                 path: modPath,
-                packedFiles: pack_files,
+                packedFiles: pack_files.map((pf) => pf.name),
                 packHeader,
                 readTables: [],
                 dependencyPacks,
@@ -469,17 +457,10 @@ const readPack = async (
         if (file) await file.close();
     }
 
-    let readTables = 'all';
-    if (packReadingOptions.skipParsingTables) readTables = [];
-    if (packReadingOptions.tablesToRead)
-        readTables = packReadingOptions.tablesToRead;
-
     return {
         name: baseModPath,
         path: modPath,
-        packedFiles: pack_files,
-        packHeader,
-        readTables,
+        packedFiles: pack_files.map((pf) => pf.name),
         dependencyPacks,
     };
 };

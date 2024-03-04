@@ -101,12 +101,11 @@ class ModFiles {
         });
     }
 
-    async getModConflicts(forceClearCache) {
+    async getModConflicts() {
         runInAction(() => {
             this.conflictsLoading = true;
         });
-        const conflicts =
-            await window.electronAPI.getModConflicts(forceClearCache);
+        const conflicts = await window.electronAPI.getModConflicts();
         if (conflicts === null) {
             return;
         }

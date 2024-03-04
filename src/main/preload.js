@@ -54,8 +54,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     deleteDownloadFiles: (deleteFilePaths) =>
         ipcRenderer.invoke('deleteDownloadFiles', deleteFilePaths),
 
-    getModConflicts: (forceClearCache) =>
-        ipcRenderer.invoke('getModConflicts', forceClearCache),
+    getModConflicts: () => ipcRenderer.invoke('getModConflicts'),
 
     dbGet: (key) => ipcRenderer.invoke('dbGet', key),
 

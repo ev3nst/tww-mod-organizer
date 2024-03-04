@@ -220,7 +220,8 @@ const InstallModModal = ({ confirmOpts, onModConfirm }) => {
                                 });
                             }
 
-                            modFiles.getFiles();
+                            await modFiles.getFiles();
+                            await modFiles.getModConflicts();
                             onModConfirm({
                                 modInputKey: Date.now(),
                                 isModalOpen: false,

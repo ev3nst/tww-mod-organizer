@@ -146,7 +146,7 @@ const Header = () => {
                                 await saveGameFiles.getFiles();
                                 await downloadedFiles.getFiles();
                                 await downloadedFiles.checkNexusAPI();
-                                modFiles.getModConflicts(true);
+                                modFiles.getModConflicts();
                             }}
                         >
                             <ArrowPathIcon className="h-5 w-5 text-green-500" />

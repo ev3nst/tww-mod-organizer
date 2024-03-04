@@ -41,7 +41,7 @@ const findCollisionPool = workerpool.pool(findCollisionsWorkerPath, {
 });
 
 export default function getModConflicts() {
-    ipcMain.handle('getModConflicts', async (_e, forceClearCache = false) => {
+    ipcMain.handle('getModConflicts', async () => {
         const tenMinutesAgo = Date.now() - TWENTY_MINUTES;
         const isAlreadyRunning = db.get(dbKeys.PACK_CONFLICT_RESOLVER_STATE);
         const packConflictResolveTimestamp = db.get(
@@ -52,26 +52,8 @@ export default function getModConflicts() {
             typeof packConflictResolveTimestamp !== 'undefined' &&
             packConflictResolveTimestamp !== null &&
             packConflictResolveTimestamp > tenMinutesAgo;
-        if (forceClearCache === false && isNotExpired && isAlreadyRunning) {
+        if (isNotExpired && isAlreadyRunning) {
             return null;
-        }
-
-        if (forceClearCache === true) {
-            db.set(dbKeys.PACK_CONFLICT_RESOLVER_TIMESTAMP, null);
-            db.set(dbKeys.PACK_CONFLICT_RESOLVER_DATA, null);
-        } else {
-            if (
-                typeof packConflictResolveTimestamp !== 'undefined' &&
-                packConflictResolveTimestamp !== null
-            ) {
-                if (packConflictResolveTimestamp > tenMinutesAgo) {
-                    const packConflictResolveData = db.get(
-                        dbKeys.PACK_CONFLICT_RESOLVER_DATA,
-                    );
-
-                    return packConflictResolveData;
-                }
-            }
         }
 
         db.set(dbKeys.PACK_CONFLICT_RESOLVER_STATE, true);
@@ -84,7 +66,7 @@ export default function getModConflicts() {
             gameInstallationPaths[managedGame],
             '../../workshop/content/' + managedGameDetails.steamId,
         );
-        const packFilePaths = [];
+        const packFilePaths = {};
         const steamModDirectories = (
             await readdir(workshopContentPath, { withFileTypes: true })
         )
@@ -102,7 +84,11 @@ export default function getModConflicts() {
             for (let mci = 0; mci < modContents.length; mci++) {
                 const modContent = modContents[mci];
                 if (modContent.endsWith('.pack')) {
-                    packFilePaths.push(path.join(modContentPath, modContent));
+                    const packFilePath = path.join(modContentPath, modContent);
+                    packFilePaths[packFilePath] = {
+                        size: fs.lstatSync(packFilePath).size,
+                        name: path.basename(packFilePath),
+                    };
                     break;
                 }
             }
@@ -135,15 +121,21 @@ export default function getModConflicts() {
             for (let mci = 0; mci < modContents.length; mci++) {
                 const modContent = modContents[mci];
                 if (modContent.endsWith('.pack')) {
-                    packFilePaths.push(path.join(modContentPath, modContent));
+                    const packFilePath = path.join(modContentPath, modContent);
+                    packFilePaths[packFilePath] = {
+                        size: fs.lstatSync(packFilePath).size,
+                        name: path.basename(packFilePath),
+                    };
                     break;
                 }
             }
         }
 
+        const dbPackFileStats = db.get(dbKeys.PACK_FILE_STATS);
+        db.set(dbKeys.PACK_FILE_STATS, packFilePaths);
+
         const packFileContents = [];
-        for (let pfpi = 0; pfpi < packFilePaths.length; pfpi++) {
-            const packFilePath = packFilePaths[pfpi];
+        for (const packFilePath in packFilePaths) {
             const packContent = await readPackPool.exec('readPack', [
                 packFilePath,
                 path.basename(packFilePath),
@@ -151,17 +143,99 @@ export default function getModConflicts() {
                 managedGameDetails.schemaName,
             ]);
 
+            packContent.packFileSize = packFilePaths[packFilePath].size;
             packFileContents.push(packContent);
         }
 
-        const collisions = await findCollisionPool.exec(
-            'findPackFileCollisions',
-            [packFileContents],
-        );
+        let conflicts = db.get(dbKeys.PACK_CONFLICT_RESOLVER_DATA);
+        if (typeof conflicts !== 'object' || conflicts === null) {
+            conflicts = {};
+        }
 
-        db.set(dbKeys.PACK_CONFLICT_RESOLVER_DATA, collisions);
+        for (let i = 0; i < packFileContents.length; i++) {
+            const pack = packFileContents[i];
+
+            if (typeof conflicts[pack.name] === 'undefined') {
+                conflicts[pack.name] = {};
+            }
+
+            for (let j = i + 1; j < packFileContents.length; j++) {
+                const packTwo = packFileContents[j];
+
+                if (typeof conflicts[packTwo.name] === 'undefined') {
+                    conflicts[packTwo.name] = {};
+                }
+
+                if (pack === packTwo) continue;
+                if (pack.name === packTwo.name) continue;
+                if (pack.name === 'data.pack' || packTwo.name === 'data.pack')
+                    continue;
+
+                if (
+                    typeof dbPackFileStats[pack.path] !== 'undefined' &&
+                    typeof dbPackFileStats[packTwo.path] !== 'undefined' &&
+                    dbPackFileStats[pack.path].size === pack.packFileSize &&
+                    dbPackFileStats[packTwo.path].size ===
+                        packTwo.packFileSize &&
+                    typeof conflicts[pack.name][packTwo.name] !== 'undefined' &&
+                    typeof conflicts[packTwo.name][pack.name] !== 'undefined'
+                ) {
+                    continue;
+                }
+
+                const packCollisions = await findCollisionPool.exec(
+                    'findPackFileCollisions',
+                    [pack, packTwo],
+                );
+
+                if (typeof packCollisions[pack.name] !== 'undefined') {
+                    conflicts[pack.name][packTwo.name] = [
+                        ...(conflicts[pack.name][packTwo.name] || []),
+                        ...packCollisions[pack.name][packTwo.name],
+                    ];
+
+                    conflicts[packTwo.name][pack.name] = [
+                        ...(conflicts[packTwo.name][pack.name] || []),
+                        ...packCollisions[packTwo.name][pack.name],
+                    ];
+                } else {
+                    conflicts[pack.name][packTwo.name] = [];
+                    conflicts[packTwo.name][pack.name] = [];
+                }
+            }
+        }
+
+        db.set(dbKeys.PACK_CONFLICT_RESOLVER_DATA, conflicts);
         db.set(dbKeys.PACK_CONFLICT_RESOLVER_STATE, false);
         db.set(dbKeys.PACK_CONFLICT_RESOLVER_TIMESTAMP, new Date().getTime());
-        return collisions;
+
+        let parsedConflicts = {};
+        for (const packConflictName in conflicts) {
+            if (typeof parsedConflicts[packConflictName] === 'undefined') {
+                parsedConflicts[packConflictName] = {};
+            }
+
+            for (const packTwoConflictName in conflicts[packConflictName]) {
+                const conflictedFileNames =
+                    conflicts[packConflictName][packTwoConflictName];
+                for (let cf = 0; cf < conflictedFileNames.length; cf++) {
+                    const conflictedFileName = conflictedFileNames[cf];
+                    if (
+                        typeof parsedConflicts[packConflictName][
+                            conflictedFileName
+                        ] === 'undefined'
+                    ) {
+                        parsedConflicts[packConflictName][conflictedFileName] =
+                            [];
+                    }
+
+                    parsedConflicts[packConflictName][conflictedFileName].push(
+                        packTwoConflictName,
+                    );
+                }
+            }
+        }
+
+        return parsedConflicts;
     });
 }
