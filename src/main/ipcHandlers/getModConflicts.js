@@ -10,7 +10,6 @@ import dbKeys from '../db/keys';
 import supportedGames from '../../store/supportedGames';
 import { resolveModInstallationPath } from '../tools/resolveManagedPaths';
 
-const TWENTY_MINUTES = 60 * 20 * 1000;
 let readPackWorkerPath = path.resolve(
     __dirname,
     '../../../workers/pack-file-manager/pack-file.worker.js',
@@ -42,21 +41,6 @@ const findCollisionPool = workerpool.pool(findCollisionsWorkerPath, {
 
 export default function getModConflicts() {
     ipcMain.handle('getModConflicts', async () => {
-        const tenMinutesAgo = Date.now() - TWENTY_MINUTES;
-        const isAlreadyRunning = db.get(dbKeys.PACK_CONFLICT_RESOLVER_STATE);
-        const packConflictResolveTimestamp = db.get(
-            dbKeys.PACK_CONFLICT_RESOLVER_TIMESTAMP,
-        );
-
-        const isNotExpired =
-            typeof packConflictResolveTimestamp !== 'undefined' &&
-            packConflictResolveTimestamp !== null &&
-            packConflictResolveTimestamp > tenMinutesAgo;
-        if (isNotExpired && isAlreadyRunning) {
-            return null;
-        }
-
-        db.set(dbKeys.PACK_CONFLICT_RESOLVER_STATE, true);
         const managedGame = db.get(dbKeys.MANAGED_GAME);
         const managedGameDetails = supportedGames.filter(
             (sgf) => sgf.slug === managedGame,
@@ -206,8 +190,6 @@ export default function getModConflicts() {
         }
 
         db.set(dbKeys.PACK_CONFLICT_RESOLVER_DATA, conflicts);
-        db.set(dbKeys.PACK_CONFLICT_RESOLVER_STATE, false);
-        db.set(dbKeys.PACK_CONFLICT_RESOLVER_TIMESTAMP, new Date().getTime());
 
         let parsedConflicts = {};
         for (const packConflictName in conflicts) {
