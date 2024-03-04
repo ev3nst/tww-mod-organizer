@@ -20,6 +20,7 @@ export function resolveSteamPaths() {
         hive: winreg.HKCU,
         key: '\\SOFTWARE\\Wow6432Node\\Valve\\Steam',
     });
+
     steamRegKey.values(function (err, steamRegItems) {
         if (!err) {
             for (let srii = 0; srii < steamRegItems.length; srii++) {
@@ -52,8 +53,6 @@ export function resolveSteamPaths() {
             }
         });
     }
-
-    resolveSaveGamePaths();
 }
 
 export function resolveSteamLibraryPaths(steamInstallPath) {
@@ -102,6 +101,7 @@ export function resolveSteamLibraryPaths(steamInstallPath) {
     }
 
     db.set(dbKeys.GAME_INSTALL_PATHS, gameInstallPaths);
+    return gameInstallPaths;
 }
 
 export function resolveSaveGamePaths() {

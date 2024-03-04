@@ -2,6 +2,7 @@ import dbGet from './dbGet';
 import dbSet from './dbSet';
 import openExternalLink from './openExternalLink';
 import fsExists from './fsExists';
+import checkPaths from './checkPaths';
 import getAvailableModProfiles from './getAvailableModProfiles';
 import checkExistingMod from './checkExistingMod';
 import checkModZipFiles from './checkModZipFiles';
@@ -36,6 +37,7 @@ export default function ipcHandlers() {
     dbSet();
     openExternalLink();
     fsExists();
+    checkPaths();
     getAvailableModProfiles();
     checkExistingMod();
     checkModZipFiles();

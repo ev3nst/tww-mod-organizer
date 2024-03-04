@@ -3,6 +3,8 @@ import { contextBridge, ipcRenderer } from 'electron';
 contextBridge.exposeInMainWorld('electronAPI', {
     nexusInitAuth: () => ipcRenderer.invoke('nexusInitAuth'),
 
+    checkPaths: () => ipcRenderer.invoke('checkPaths'),
+
     checkExistingMod: (modName) =>
         ipcRenderer.invoke('checkExistingMod', modName),
 

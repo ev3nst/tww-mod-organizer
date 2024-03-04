@@ -11,7 +11,7 @@ import { app, globalShortcut, dialog } from 'electron';
 import path from 'path';
 import ipcHandlers from './ipcHandlers';
 import createWindow from './createWindow';
-import { resolveSteamPaths } from './tools/steam';
+import { resolveSaveGamePaths, resolveSteamPaths } from './tools/steam';
 import { resolveManagedPaths } from './tools/resolveManagedPaths';
 
 let mainWindow = null;
@@ -69,6 +69,7 @@ if (!gotTheLock) {
 
         // Steam related
         resolveSteamPaths();
+        resolveSaveGamePaths();
         resolveManagedPaths();
 
         ipcHandlers();
