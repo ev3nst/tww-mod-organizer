@@ -17,7 +17,7 @@ export default async function deleteModProfile() {
             managedGame,
         );
 
-        const profileFileName = `${profileName}.txt`;
+        const profileFileName = `${profileName}.json`;
         const profileFilePath = path.join(modProfilePath, profileFileName);
 
         return await shell.trashItem(profileFilePath);

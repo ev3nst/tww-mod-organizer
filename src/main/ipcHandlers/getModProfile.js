@@ -15,13 +15,13 @@ export async function retrieveModProfile(profileName) {
         managedGame,
     );
 
-    const profileFileName = `${profileName}.txt`;
+    const profileFileName = `${profileName}.json`;
     const profileFilePath = path.join(modProfilePath, profileFileName);
     const modFiles = await retrieveModsMetaInformation();
     if (!fs.existsSync(profileFilePath)) {
         mkdripSync(modProfilePath);
         const defaultProfileData = modFiles.map((mf) => {
-            return { id: mf.id, active: true };
+            return { id: mf.id, title: mf.title, active: true };
         });
         fs.writeFileSync(profileFilePath, JSON.stringify(defaultProfileData));
         return defaultProfileData;
@@ -34,14 +34,12 @@ export async function retrieveModProfile(profileName) {
             const row = loadProfileData[lpdi];
 
             // Previously existed mod with given id does not exists
-            if (modFiles.findIndex((v) => v.id === row.id) === -1) {
-                loadProfileDataResolved = loadProfileDataResolved.filter(
-                    function (obj) {
-                        return obj.id === row.id;
-                    },
-                );
-            } else {
-                loadProfileDataResolved.push(row);
+            const prevExsIndex = modFiles.findIndex((v) => v.id === row.id);
+            if (prevExsIndex !== -1) {
+                loadProfileDataResolved.push({
+                    ...row,
+                    title: modFiles[prevExsIndex].title,
+                });
             }
         }
 
@@ -53,6 +51,7 @@ export async function retrieveModProfile(profileName) {
             ) {
                 loadProfileDataResolved.push({
                     id: mf.id,
+                    title: mf.title,
                     active: true,
                 });
             }
@@ -63,6 +62,7 @@ export async function retrieveModProfile(profileName) {
             JSON.stringify(loadProfileDataResolved),
         );
 
+        console.log(loadProfileDataResolved, 'loadProfileDataResolved');
         return loadProfileDataResolved;
     }
 }

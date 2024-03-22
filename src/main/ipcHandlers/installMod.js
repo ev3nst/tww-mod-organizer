@@ -70,7 +70,7 @@ export default function installMod() {
                     const files = fs.readdirSync(modProfilePath);
                     for (let fi = 0; fi < files.length; fi++) {
                         const filePath = path.join(modProfilePath, files[fi]);
-                        if (filePath.endsWith('.txt')) {
+                        if (filePath.endsWith('.json')) {
                             const loadProfileDataRaw = fs.readFileSync(
                                 filePath,
                                 'utf-8',

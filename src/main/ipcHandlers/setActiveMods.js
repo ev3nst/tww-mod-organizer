@@ -15,7 +15,7 @@ export default async function setActiveMods() {
         );
 
         const profileName = db.get(dbKeys.MOD_PROFILE) || 'default';
-        const profileFileName = `${profileName}.txt`;
+        const profileFileName = `${profileName}.json`;
         const profileFilePath = path.join(modProfilePath, profileFileName);
         const loadProfileDataRaw = fs.readFileSync(profileFilePath, 'utf-8');
         const loadProfileData = JSON.parse(loadProfileDataRaw);

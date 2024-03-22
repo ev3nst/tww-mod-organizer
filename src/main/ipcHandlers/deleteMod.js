@@ -31,7 +31,7 @@ export default function deleteMod() {
                     modProfilePath,
                     profileFileName,
                 );
-                if (profileFilePath.endsWith('.txt')) {
+                if (profileFilePath.endsWith('.json')) {
                     const loadProfileDataRaw = fs.readFileSync(
                         profileFilePath,
                         'utf-8',

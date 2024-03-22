@@ -17,7 +17,7 @@ export default async function createModProfile() {
                 managedGame,
             );
 
-            const profileFileName = `${profileName}.txt`;
+            const profileFileName = `${profileName}.json`;
             const profileFilePath = path.join(modProfilePath, profileFileName);
             if (!fs.existsSync(modProfilePath)) {
                 mkdripSync(modProfilePath);

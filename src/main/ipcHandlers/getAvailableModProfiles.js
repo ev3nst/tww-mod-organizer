@@ -18,7 +18,7 @@ export default async function getAvailableModProfiles() {
         const files = fs.readdirSync(modProfilePath);
         for (let fi = 0; fi < files.length; fi++) {
             const filePath = path.join(modProfilePath, files[fi]);
-            if (filePath.endsWith('.txt')) {
+            if (filePath.endsWith('.json')) {
                 availableModProfiles.push(files[fi]);
             }
         }

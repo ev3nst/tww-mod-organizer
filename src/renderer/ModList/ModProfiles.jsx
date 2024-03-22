@@ -51,11 +51,11 @@ const ModProfiles = () => {
                             key={`available_order_profile_${aop}`}
                             onClick={() => {
                                 modFiles.changeModProfile(
-                                    aop.replace('.txt', ''),
+                                    aop.replace('.json', ''),
                                 );
                             }}
                         >
-                            {aop.replace('.txt', '')}
+                            {aop.replace('.json', '')}
                         </DropdownItem>
                     ))}
                 </DropdownMenu>
