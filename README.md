@@ -1,6 +1,6 @@
 # TWW Mod Organizer
 
-#### _Mod manager tool for Total War: Warhammer 2 & 3_
+#### _Mod manager tool for Total War: Warhammer 2 & 3 & Total War: Three Kingdoms_
 
 This is a simple mod manager with features only i needed and tailored towards what i imagined.
 Therefore please do not expect so much flexibility.
@@ -16,10 +16,6 @@ It's been made with steam in mind so a lot of background code relies on steam. I
 -   Save game managing, multiple deletion, starting with selected game from startup
 -   Installing manual mods within app with profile in mind. This ensures you do not have to extract mod files into to the game installation and possibly over complicating folder structure for further management
 -   Nexus Mods integration - downloading directly with deep links
-
-## To-Do
-
--   Nexus: endorsing, checking for updates
 
 ## For Developers
 
