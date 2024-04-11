@@ -141,7 +141,9 @@ export async function getWorkshopMods() {
         typeof dbSubscribedModIds[managedGame] === 'undefined' ||
         typeof dbSubscribedModDetails === 'undefined' ||
         typeof dbSubscribedModDetails[managedGame] === 'undefined' ||
-        !arrayEquals(subscribedModIdsStr, dbSubscribedModIds[managedGame])
+        !arrayEquals(subscribedModIdsStr, dbSubscribedModIds[managedGame]) ||
+        dbSubscribedModIds[managedGame].length !==
+            dbSubscribedModDetails[managedGame].length
     ) {
         const saveIds = {
             ...dbSubscribedModIds,
