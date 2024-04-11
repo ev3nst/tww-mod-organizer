@@ -16,6 +16,20 @@ const Games = () => {
                 'undefined' &&
             String(settings.gameInstallPaths[gameDetails.slug]).length > 0;
 
+        const gameImage = (
+            <Image
+                shadow="sm"
+                radius="lg"
+                width="100%"
+                alt={gameDetails.name}
+                className="w-full object-cover h-[150px]"
+                src={gameAssets[gameDetails.slug].logo}
+                style={{
+                    filter: gamePathExists ? '' : 'grayscale(100%)',
+                }}
+            />
+        );
+
         return (
             <Card
                 key={`startup_choose_game_${gameDetails.slug}`}
@@ -34,36 +48,14 @@ const Games = () => {
             >
                 <CardBody className="overflow-visible p-0">
                     {gamePathExists === true ? (
-                        <Image
-                            shadow="sm"
-                            radius="lg"
-                            width="100%"
-                            alt={gameDetails.name}
-                            className="w-full object-cover h-[350px]"
-                            src={gameAssets[gameDetails.slug].logo}
-                            style={{
-                                filter: gamePathExists ? '' : 'grayscale(100%)',
-                            }}
-                        />
+                        gameImage
                     ) : (
                         <>
                             <Tooltip
                                 color="danger"
                                 content="We could not identify the installation path, you can click on this image to choose manually."
                             >
-                                <Image
-                                    shadow="sm"
-                                    radius="lg"
-                                    width="100%"
-                                    alt={gameDetails.name}
-                                    className="w-full object-cover h-[350px]"
-                                    src={gameAssets[gameDetails.slug].logo}
-                                    style={{
-                                        filter: gamePathExists
-                                            ? ''
-                                            : 'grayscale(100%)',
-                                    }}
-                                />
+                                {gameImage}
                             </Tooltip>
                             <input
                                 className="hidden"

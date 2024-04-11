@@ -62,7 +62,6 @@ export async function retrieveModProfile(profileName) {
             JSON.stringify(loadProfileDataResolved),
         );
 
-        console.log(loadProfileDataResolved, 'loadProfileDataResolved');
         return loadProfileDataResolved;
     }
 }

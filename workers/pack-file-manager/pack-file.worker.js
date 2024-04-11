@@ -2,6 +2,7 @@ const BinaryFile = require('binary-file');
 const workerpool = require('workerpool');
 const wh3Schema = require('./schema_wh3.json');
 const wh2Schema = require('./schema_wh2.json');
+const threeKingdomsSchema = require('./schema_3k.json');
 
 const DBNameToDBVersions = {
     wh2: {},
@@ -9,14 +10,17 @@ const DBNameToDBVersions = {
     threeKingdoms: {},
 };
 
-const wh3Definitions = wh3Schema.definitions;
-for (const table_name in wh3Definitions) {
-    DBNameToDBVersions['wh3'][table_name] = wh3Definitions[table_name];
+for (const table_name in wh3Schema.definitions) {
+    DBNameToDBVersions['wh3'][table_name] = wh3Schema.definitions[table_name];
 }
 
-const wh2Definitions = wh2Schema.definitions;
-for (const table_name in wh2Definitions) {
-    DBNameToDBVersions['wh2'][table_name] = wh2Definitions[table_name];
+for (const table_name in wh2Schema.definitions) {
+    DBNameToDBVersions['wh2'][table_name] = wh2Schema.definitions[table_name];
+}
+
+for (const table_name in threeKingdomsSchema.definitions) {
+    DBNameToDBVersions['threeKingdoms'][table_name] =
+        threeKingdomsSchema.definitions[table_name];
 }
 
 const locFields = [

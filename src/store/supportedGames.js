@@ -19,6 +19,16 @@ const supportedGames = [
         nexusSlug: 'totalwarwarhammer3',
         schemaName: 'wh3',
     },
+    {
+        name: 'Total War: Three Kingdoms',
+        savePathFolder: 'ThreeKingdoms',
+        exeName: 'Three_Kingdoms',
+        slug: 'tw3k',
+        steamId: 779340,
+        steamFolderName: 'Total War THREE KINGDOMS',
+        nexusSlug: 'totalwarthreekingdoms',
+        schemaName: 'threeKingdoms',
+    },
 ];
 
 export default supportedGames;
