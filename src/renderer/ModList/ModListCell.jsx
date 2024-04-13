@@ -13,26 +13,43 @@ import {
     Checkbox,
     Spinner,
 } from '@nextui-org/react';
+import { observer } from 'mobx-react';
 import { ArrowRightIcon, EyeIcon, TrashIcon } from '@heroicons/react/24/solid';
 import { VerticalDotsIcon } from '../Icons';
 import ModListCellIcon from './ModListCellIcon';
 import dbKeys from '../../main/db/keys';
 import { capitalize } from '../../helpers/util';
+import modFiles from '../../store/modFiles';
 
 const ModListCell = ({
     row,
     columnKey,
-    modFilesData,
     onDeleteModalClick,
     onChangePriorityModalClick,
     onShowConflictsModalClick,
     onSelection,
-    currentPriority,
-    isChecked,
 }) => {
+    const currentPriority = modFiles.modProfileData.findIndex(
+        function (modData) {
+            return modData.id === row.id;
+        },
+    );
+
     switch (columnKey) {
         case 'selection':
             return useMemo(() => {
+                let isChecked = false;
+
+                if (
+                    typeof modFiles.modProfileData[currentPriority] !==
+                        'undefined' &&
+                    typeof modFiles.modProfileData[currentPriority].active !==
+                        'undefined' &&
+                    modFiles.modProfileData[currentPriority].active === true
+                ) {
+                    isChecked = true;
+                }
+
                 return (
                     <Checkbox
                         color="success"
@@ -44,7 +61,7 @@ const ModListCell = ({
                         <p></p>
                     </Checkbox>
                 );
-            }, [isChecked]);
+            }, [currentPriority]);
 
         case 'order':
             return useMemo(() => {
@@ -88,115 +105,117 @@ const ModListCell = ({
             }, []);
 
         case 'conflict':
-            if (modFilesData.conflictsLoading) {
-                return (
-                    <div className="flex w-full items-center justify-center">
-                        <Spinner size="sm" />
-                    </div>
-                );
-            }
+            return useMemo(() => {
+                if (modFiles.conflictsLoading) {
+                    return (
+                        <div className="flex w-full items-center justify-center">
+                            <Spinner size="sm" />
+                        </div>
+                    );
+                }
 
-            if (
-                typeof row.packFileName !== 'undefined' &&
-                row.packFileName !== null &&
-                String(row.packFileName).length > 0 &&
-                typeof modFilesData.conflicts !== 'undefined' &&
-                typeof modFilesData.conflicts[row.packFileName] !== 'undefined'
-            ) {
-                const win = {};
-                const lose = {};
-                for (const packFileName in modFilesData.conflicts[
-                    row.packFileName
-                ]) {
-                    const otherModPacks =
-                        modFilesData.conflicts[row.packFileName][packFileName];
-                    const otherModPacksKeys = otherModPacks;
+                if (
+                    typeof row.packFileName !== 'undefined' &&
+                    row.packFileName !== null &&
+                    String(row.packFileName).length > 0 &&
+                    typeof modFiles.conflicts !== 'undefined' &&
+                    typeof modFiles.conflicts[row.packFileName] !== 'undefined'
+                ) {
+                    const win = {};
+                    const lose = {};
+                    for (const packFileName in modFiles.conflicts[
+                        row.packFileName
+                    ]) {
+                        const otherModPacks =
+                            modFiles.conflicts[row.packFileName][packFileName];
+                        const otherModPacksKeys = otherModPacks;
 
-                    for (
-                        let ompi = 0;
-                        ompi < otherModPacksKeys.length;
-                        ompi++
-                    ) {
-                        const otherModPack = otherModPacksKeys[ompi];
-                        const index = modFilesData.files.findIndex((mf) => {
-                            return mf.packFileName === otherModPack;
-                        });
-
-                        // This pack has been read for conflict but somehow doesnt exists in load order ?
-                        // Needs more debugging
-                        if (
-                            typeof modFilesData.files[index] === 'undefined' ||
-                            index === null
+                        for (
+                            let ompi = 0;
+                            ompi < otherModPacksKeys.length;
+                            ompi++
                         ) {
-                            continue;
-                        }
-
-                        const conflictedModPriority =
-                            modFilesData.modProfileData.findIndex(
-                                function (modData) {
-                                    return (
-                                        modData.id ===
-                                        modFilesData.files[index].id
-                                    );
-                                },
-                            );
-                        if (currentPriority > conflictedModPriority) {
-                            if (typeof win[packFileName] === 'undefined') {
-                                win[packFileName] = [];
-                            }
-                            win[packFileName].push(
-                                modFilesData.files[index].title,
-                            );
-                        } else {
-                            if (typeof lose[packFileName] === 'undefined') {
-                                lose[packFileName] = [];
-                            }
-                            lose[packFileName].push(
-                                modFilesData.files[index].title,
-                            );
-                        }
-                    }
-                }
-
-                const winKeys = Object.keys(win);
-                const loseKeys = Object.keys(lose);
-
-                // It is winnig againts upper files but in the end conflcit is won by 3rd party
-                for (let li = 0; li < loseKeys.length; li++) {
-                    const loseKey = loseKeys[li];
-                    if (winKeys.includes(loseKey)) {
-                        winKeys.splice(winKeys.indexOf(loseKey), 1);
-                    }
-                }
-
-                return (
-                    <Link
-                        className="cursor-pointer hover:text-success"
-                        onClick={() => {
-                            onShowConflictsModalClick({
-                                isOpen: true,
-                                selectedModRow: row,
-                                win,
-                                winKeys,
-                                lose,
-                                loseKeys,
+                            const otherModPack = otherModPacksKeys[ompi];
+                            const index = modFiles.files.findIndex((mf) => {
+                                return mf.packFileName === otherModPack;
                             });
-                        }}
-                    >
-                        {winKeys.length > 0 && (
-                            <p className="text-success">{winKeys.length}</p>
-                        )}
-                        {winKeys.length > 0 && loseKeys.length > 0 && (
-                            <span className="mx-1 text-white">-</span>
-                        )}
-                        {loseKeys.length > 0 && (
-                            <p className="text-danger">{loseKeys.length}</p>
-                        )}
-                    </Link>
-                );
-            }
 
-            return '';
+                            // This pack has been read for conflict but somehow doesnt exists in load order ?
+                            // Needs more debugging
+                            if (
+                                typeof modFiles.files[index] === 'undefined' ||
+                                index === null
+                            ) {
+                                continue;
+                            }
+
+                            const conflictedModPriority =
+                                modFiles.modProfileData.findIndex(
+                                    function (modData) {
+                                        return (
+                                            modData.id ===
+                                            modFiles.files[index].id
+                                        );
+                                    },
+                                );
+                            if (currentPriority > conflictedModPriority) {
+                                if (typeof win[packFileName] === 'undefined') {
+                                    win[packFileName] = [];
+                                }
+                                win[packFileName].push(
+                                    modFiles.files[index].title,
+                                );
+                            } else {
+                                if (typeof lose[packFileName] === 'undefined') {
+                                    lose[packFileName] = [];
+                                }
+                                lose[packFileName].push(
+                                    modFiles.files[index].title,
+                                );
+                            }
+                        }
+                    }
+
+                    const winKeys = Object.keys(win);
+                    const loseKeys = Object.keys(lose);
+
+                    // It is winnig againts upper files but in the end conflcit is won by 3rd party
+                    for (let li = 0; li < loseKeys.length; li++) {
+                        const loseKey = loseKeys[li];
+                        if (winKeys.includes(loseKey)) {
+                            winKeys.splice(winKeys.indexOf(loseKey), 1);
+                        }
+                    }
+
+                    return (
+                        <Link
+                            className="cursor-pointer hover:text-success"
+                            onClick={() => {
+                                onShowConflictsModalClick({
+                                    isOpen: true,
+                                    selectedModRow: row,
+                                    win,
+                                    winKeys,
+                                    lose,
+                                    loseKeys,
+                                });
+                            }}
+                        >
+                            {winKeys.length > 0 && (
+                                <p className="text-success">{winKeys.length}</p>
+                            )}
+                            {winKeys.length > 0 && loseKeys.length > 0 && (
+                                <span className="mx-1 text-white">-</span>
+                            )}
+                            {loseKeys.length > 0 && (
+                                <p className="text-danger">{loseKeys.length}</p>
+                            )}
+                        </Link>
+                    );
+                }
+
+                return '';
+            }, [modFiles.conflictsLoading, currentPriority]);
 
         case 'version':
             return useMemo(() => {
@@ -326,4 +345,4 @@ const ModListCell = ({
     }
 };
 
-export default ModListCell;
+export default observer(ModListCell);
