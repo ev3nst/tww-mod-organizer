@@ -74,7 +74,6 @@ function ModOrdering() {
                 <DragDropContext
                     onDragStart={(dragEvent) => {
                         runInAction(() => {
-                            console.log(dragEvent.draggableId, 'ddd');
                             modFiles.draggingId = dragEvent.draggableId;
                         });
                     }}

@@ -12,3 +12,23 @@ body,
 .modlist-table [data-selected='true']::before {
     content: none !important;
 }
+
+.modlist-table tr {
+    position: relative;
+}
+
+.dragging-modlist-row,
+.modlist-table td {
+    position: unset !important;
+}
+
+.dragging-modlist-row:after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    background: #6891df;
+    z-index: -1;
+}

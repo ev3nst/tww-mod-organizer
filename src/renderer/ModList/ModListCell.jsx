@@ -36,6 +36,17 @@ const ModListCell = ({
     );
 
     switch (columnKey) {
+        case 'order':
+            return useMemo(() => {
+                return (
+                    <p
+                        className={`text-center ${modFiles.draggingId === row.id ? 'dragging-modlist-row' : ''}`}
+                    >
+                        {currentPriority}
+                    </p>
+                );
+            }, [currentPriority, modFiles.draggingId]);
+
         case 'selection':
             return useMemo(() => {
                 let isChecked = false;
@@ -61,11 +72,6 @@ const ModListCell = ({
                         <p></p>
                     </Checkbox>
                 );
-            }, [currentPriority]);
-
-        case 'order':
-            return useMemo(() => {
-                return <p className="text-center">{currentPriority}</p>;
             }, [currentPriority]);
 
         case 'title':
