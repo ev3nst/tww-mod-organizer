@@ -96,14 +96,7 @@ function ModOrdering() {
                             1,
                         )[0];
                         newModProfileData.splice(toIndex, 0, element);
-                        const output = newModProfileData.map(
-                            (modData) =>
-                                modFiles.files.filter(
-                                    (mf) => mf.id === modData.id,
-                                )[0],
-                        );
                         runInAction(() => {
-                            modFiles.files = output;
                             modFiles.modProfileData = newModProfileData;
                         });
                     }}

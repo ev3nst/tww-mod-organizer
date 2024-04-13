@@ -19,6 +19,11 @@ let findCollisionsWorkerPath = path.resolve(
     '../../../workers/pack-file-manager/find-collisions.worker.js',
 );
 
+let parseConflictsWorkerPath = path.resolve(
+    __dirname,
+    '../../../workers/parse-conflicts.worker.js',
+);
+
 if (app.isPackaged) {
     const workerJsPath = path.resolve(
         __dirname,
@@ -27,6 +32,7 @@ if (app.isPackaged) {
 
     readPackWorkerPath = workerJsPath;
     findCollisionsWorkerPath = workerJsPath;
+    parseConflictsWorkerPath = workerJsPath;
 }
 
 const readPackPool = workerpool.pool(readPackWorkerPath, {
@@ -35,6 +41,11 @@ const readPackPool = workerpool.pool(readPackWorkerPath, {
 });
 
 const findCollisionPool = workerpool.pool(findCollisionsWorkerPath, {
+    workerType: 'thread',
+    maxWorkers: 3,
+});
+
+const parseConflictsPool = workerpool.pool(parseConflictsWorkerPath, {
     workerType: 'thread',
     maxWorkers: 3,
 });
@@ -190,33 +201,10 @@ export default function getModConflicts() {
         }
 
         db.set(dbKeys.PACK_CONFLICT_RESOLVER_DATA, conflicts);
-
-        let parsedConflicts = {};
-        for (const packConflictName in conflicts) {
-            if (typeof parsedConflicts[packConflictName] === 'undefined') {
-                parsedConflicts[packConflictName] = {};
-            }
-
-            for (const packTwoConflictName in conflicts[packConflictName]) {
-                const conflictedFileNames =
-                    conflicts[packConflictName][packTwoConflictName];
-                for (let cf = 0; cf < conflictedFileNames.length; cf++) {
-                    const conflictedFileName = conflictedFileNames[cf];
-                    if (
-                        typeof parsedConflicts[packConflictName][
-                            conflictedFileName
-                        ] === 'undefined'
-                    ) {
-                        parsedConflicts[packConflictName][conflictedFileName] =
-                            [];
-                    }
-
-                    parsedConflicts[packConflictName][conflictedFileName].push(
-                        packTwoConflictName,
-                    );
-                }
-            }
-        }
+        const parsedConflicts = await parseConflictsPool.exec(
+            'parseConflicts',
+            [conflicts],
+        );
 
         return parsedConflicts;
     });

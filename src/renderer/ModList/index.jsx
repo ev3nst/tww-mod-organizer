@@ -199,6 +199,27 @@ function ModList() {
                     </TableHeader>
                     <TableBody emptyContent="No mods found" items={items}>
                         {(item) => {
+                            const currentPriority =
+                                modFilesData.modProfileData.findIndex(
+                                    function (modData) {
+                                        return modData.id === item.id;
+                                    },
+                                );
+                            let isChecked = false;
+
+                            if (
+                                typeof modFilesData.modProfileData[
+                                    currentPriority
+                                ] !== 'undefined' &&
+                                typeof modFilesData.modProfileData[
+                                    currentPriority
+                                ].active !== 'undefined' &&
+                                modFilesData.modProfileData[currentPriority]
+                                    .active === true
+                            ) {
+                                isChecked = true;
+                            }
+
                             return (
                                 <TableRow
                                     key={item.title}
@@ -216,7 +237,11 @@ function ModList() {
                                                 row={item}
                                                 columnKey={columnKey}
                                                 modFilesData={modFilesData}
-                                                onSelection={async (row) => {
+                                                currentPriority={
+                                                    currentPriority
+                                                }
+                                                isChecked={isChecked}
+                                                onSelection={async () => {
                                                     const selectedArr =
                                                         modFiles.modProfileData
                                                             .filter(
@@ -229,18 +254,18 @@ function ModList() {
 
                                                     if (
                                                         selectedArr.includes(
-                                                            row.id,
+                                                            item.id,
                                                         )
                                                     ) {
                                                         selectedArr.splice(
                                                             selectedArr.indexOf(
-                                                                row.id,
+                                                                item.id,
                                                             ),
                                                             1,
                                                         );
                                                     } else {
                                                         selectedArr.push(
-                                                            row.id,
+                                                            item.id,
                                                         );
                                                     }
 

@@ -39,13 +39,17 @@ const ChangePriorityModal = ({
                         placeholder="Type the number of priority"
                         value={toIndex}
                         onValueChange={(value) => {
-                            const reg = new RegExp('^[0-9]+$');
-                            if (value.match(reg) !== null) {
-                                if (value < 0) {
-                                    value = 0;
-                                }
+                            if (value === '') {
+                                setToIndex('');
+                            } else {
+                                const reg = new RegExp('^[0-9]+$');
+                                if (value.match(reg) !== null) {
+                                    if (value < 0) {
+                                        value = 0;
+                                    }
 
-                                setToIndex(value);
+                                    setToIndex(value);
+                                }
                             }
                         }}
                     />
