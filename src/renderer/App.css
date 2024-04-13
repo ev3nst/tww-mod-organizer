@@ -32,3 +32,7 @@ body,
     background: #6891df;
     z-index: -1;
 }
+
+.modlist-table td:before {
+    z-index: -1;
+}

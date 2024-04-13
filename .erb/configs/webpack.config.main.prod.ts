@@ -39,6 +39,11 @@ const configuration: webpack.Configuration = {
                 'pack-file-manager',
                 'find-collisions.worker.js',
             ),
+            path.join(
+                webpackPaths.rootPath,
+                'workers',
+                'parse-conflicts.worker',
+            ),
         ],
     },
 
