@@ -2,7 +2,7 @@ import { app, ipcMain, shell } from 'electron';
 import path from 'path';
 
 import dbKeys from '../db/keys';
-import db from '../db';
+import { db } from '../db';
 
 export default async function deleteModProfile() {
     ipcMain.handle('deleteModProfile', async (_e, profileName) => {

@@ -3,7 +3,7 @@ import path from 'path';
 import fs from 'fs';
 
 import dbKeys from '../db/keys';
-import db from '../db';
+import { db } from '../db';
 
 export default async function setActiveMods() {
     ipcMain.handle('setActiveMods', async (_e, modIds) => {

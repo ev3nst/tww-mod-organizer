@@ -2,7 +2,7 @@ import { ipcMain } from 'electron';
 import path from 'path';
 import fs from 'fs';
 
-import db from '../db';
+import { db } from '../db';
 import dbKeys from '../db/keys';
 import { resolveSaveGamePaths } from '../tools/steam';
 

@@ -3,7 +3,7 @@ import path from 'path';
 import fs from 'fs';
 import { exec } from 'child_process';
 
-import db from '../db';
+import { db } from '../db';
 import dbKeys from '../db/keys';
 import supportedGames from '../../store/supportedGames';
 

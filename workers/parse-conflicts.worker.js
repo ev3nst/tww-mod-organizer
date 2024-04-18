@@ -8,6 +8,13 @@ function parseConflicts(conflicts) {
         }
 
         for (const packTwoConflictName in conflicts[packConflictName]) {
+            if (
+                typeof conflicts[packConflictName][packTwoConflictName] ===
+                'undefined'
+            ) {
+                continue;
+            }
+
             const conflictedFileNames =
                 conflicts[packConflictName][packTwoConflictName];
             for (let cf = 0; cf < conflictedFileNames.length; cf++) {

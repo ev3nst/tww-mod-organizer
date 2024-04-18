@@ -1,6 +1,6 @@
 import { dialog, ipcMain } from 'electron';
 
-import db from '../db';
+import { db } from '../db';
 import dbKeys from '../db/keys';
 import axios from 'axios';
 

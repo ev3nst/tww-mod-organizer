@@ -105,15 +105,20 @@ class ModFiles {
         runInAction(() => {
             this.conflictsLoading = true;
         });
-        const conflicts = await window.electronAPI.getModConflicts();
-        if (conflicts === null) {
-            return;
-        }
 
-        runInAction(() => {
-            this.conflicts = conflicts;
-            this.conflictsLoading = false;
-        });
+        try {
+            const conflicts = await window.electronAPI.getModConflicts();
+            if (conflicts === null) {
+                return;
+            }
+
+            runInAction(() => {
+                this.conflicts = conflicts;
+                this.conflictsLoading = false;
+            });
+        } catch (e) {
+            console.log(e, 'err');
+        }
     }
 }
 

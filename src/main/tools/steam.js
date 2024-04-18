@@ -4,7 +4,7 @@ import fs from 'fs';
 import { readdir } from 'fs/promises';
 import path from 'path';
 
-import db from '../db';
+import { db } from '../db';
 import dbKeys from '../db/keys';
 import steamClient from './steamClient';
 import supportedGames from '../../store/supportedGames';

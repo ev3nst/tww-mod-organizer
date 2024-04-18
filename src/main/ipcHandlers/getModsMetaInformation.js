@@ -5,14 +5,17 @@ import { readdir } from 'fs/promises';
 import { sync as mkdripSync } from 'mkdirp';
 import { ulid } from 'ulid';
 
-import db from '../db';
+import { db } from '../db';
 import dbKeys from '../db/keys';
 import { getWorkshopMods } from '../tools/steam';
 import { resolveModInstallationPath } from '../tools/resolveManagedPaths';
 
 export async function retrieveModsMetaInformation() {
+    console.time('Execution Time');
+
     const managedGame = db.get(dbKeys.MANAGED_GAME);
     const steamWorkshopMods = await getWorkshopMods();
+    console.timeEnd('Execution Time');
     let manuallyInstalledMods = [];
     const modInstallationFolder = resolveModInstallationPath();
     const gameSpecificModInstallFolder = path.join(

@@ -5,7 +5,7 @@ import { sync as mkdripSync } from 'mkdirp';
 import { ulid } from 'ulid';
 import { extractFileFromArchive } from '../tools/7z';
 
-import db from '../db';
+import { db } from '../db';
 import dbKeys from '../db/keys';
 import { resolveModInstallationPath } from '../tools/resolveManagedPaths';
 

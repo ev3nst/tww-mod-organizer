@@ -13,6 +13,7 @@ import {
     Checkbox,
     Spinner,
 } from '@nextui-org/react';
+import { toJS } from 'mobx';
 import { observer } from 'mobx-react';
 import { ArrowRightIcon, EyeIcon, TrashIcon } from '@heroicons/react/24/solid';
 import { VerticalDotsIcon } from '../Icons';
@@ -199,7 +200,7 @@ const ModListCell = ({
                             onClick={() => {
                                 onShowConflictsModalClick({
                                     isOpen: true,
-                                    selectedModRow: row,
+                                    selectedModRow: toJS(row),
                                     win,
                                     winKeys,
                                     lose,
@@ -315,7 +316,7 @@ const ModListCell = ({
                                     onClick={() => {
                                         onChangePriorityModalClick({
                                             isOpen: true,
-                                            selectedModRow: row,
+                                            selectedModRow: toJS(row),
                                             fromIndex: currentPriority,
                                         });
                                     }}
@@ -330,7 +331,7 @@ const ModListCell = ({
                                     onClick={() => {
                                         onDeleteModalClick({
                                             isOpen: true,
-                                            selectedModRow: row,
+                                            selectedModRow: toJS(row),
                                         });
                                     }}
                                     startContent={

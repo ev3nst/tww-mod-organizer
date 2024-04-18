@@ -5,7 +5,7 @@ import { sync as mkdripSync } from 'mkdirp';
 import { readdir } from 'fs/promises';
 import workerpool from 'workerpool';
 
-import db from '../db';
+import { db, packFileStatsDB, packConflictResolverDataDB } from '../db';
 import dbKeys from '../db/keys';
 import supportedGames from '../../store/supportedGames';
 import { resolveModInstallationPath } from '../tools/resolveManagedPaths';
@@ -126,8 +126,8 @@ export default function getModConflicts() {
             }
         }
 
-        const dbPackFileStats = db.get(dbKeys.PACK_FILE_STATS);
-        db.set(dbKeys.PACK_FILE_STATS, packFilePaths);
+        const dbPackFileStats = packFileStatsDB.get(dbKeys.PACK_FILE_STATS);
+        packFileStatsDB.set(dbKeys.PACK_FILE_STATS, packFilePaths);
 
         const packFileContents = [];
         for (const packFilePath in packFilePaths) {
@@ -142,8 +142,14 @@ export default function getModConflicts() {
             packFileContents.push(packContent);
         }
 
-        let conflicts = db.get(dbKeys.PACK_CONFLICT_RESOLVER_DATA);
-        if (typeof conflicts !== 'object' || conflicts === null) {
+        let conflicts = packConflictResolverDataDB.get(
+            dbKeys.PACK_CONFLICT_RESOLVER_DATA,
+        );
+        if (
+            typeof conflicts !== 'object' ||
+            conflicts === null ||
+            typeof conflicts === 'undefined'
+        ) {
             conflicts = {};
         }
 
@@ -200,7 +206,11 @@ export default function getModConflicts() {
             }
         }
 
-        db.set(dbKeys.PACK_CONFLICT_RESOLVER_DATA, conflicts);
+        packConflictResolverDataDB.set(
+            dbKeys.PACK_CONFLICT_RESOLVER_DATA,
+            conflicts,
+        );
+
         const parsedConflicts = await parseConflictsPool.exec(
             'parseConflicts',
             [conflicts],

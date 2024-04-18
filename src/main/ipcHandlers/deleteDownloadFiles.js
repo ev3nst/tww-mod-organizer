@@ -1,7 +1,7 @@
 import { ipcMain, shell } from 'electron';
 import path from 'path';
 
-import db from '../db';
+import { db } from '../db';
 import dbKeys from '../db/keys';
 import supportedGames from '../../store/supportedGames';
 

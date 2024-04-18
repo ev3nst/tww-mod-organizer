@@ -2,7 +2,7 @@ import { dialog, ipcMain, shell } from 'electron';
 import { ulid } from 'ulid';
 
 import WebSocket from 'ws';
-import db from '../db';
+import { db } from '../db';
 import dbKeys from '../db/keys';
 
 export default function nexusInitAuth() {

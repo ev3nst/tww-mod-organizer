@@ -3,7 +3,7 @@ import path from 'path';
 import fs from 'fs';
 
 import dbKeys from '../db/keys';
-import db from '../db';
+import { db } from '../db';
 import { resolveModInstallationPath } from '../tools/resolveManagedPaths';
 
 export default function deleteMod() {

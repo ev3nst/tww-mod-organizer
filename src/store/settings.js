@@ -22,18 +22,27 @@ class Settings {
         const dbManagedGame = await window.electronAPI.dbGet(
             dbKeys.MANAGED_GAME,
         );
-        const dbGameInstallPaths = await window.electronAPI.checkPaths();
+
+        if (typeof dbManagedGame !== 'undefined' && dbManagedGame !== null) {
+            await window.electronAPI.checkPaths();
+        }
+
+        const dbGameInstallPaths = await window.electronAPI.dbGet(
+            dbKeys.GAME_INSTALL_PATHS,
+        );
 
         if (
-            typeof dbManagedGame !== 'undefined' &&
-            dbManagedGame !== null &&
             typeof dbGameInstallPaths !== 'undefined' &&
             dbGameInstallPaths !== null
         ) {
             runInAction(() => {
-                this.managedGame = dbManagedGame;
                 this.gameInstallPaths = dbGameInstallPaths;
-                this.loading = false;
+            });
+        }
+
+        if (typeof dbManagedGame !== 'undefined' && dbManagedGame !== null) {
+            runInAction(() => {
+                this.managedGame = dbManagedGame;
             });
         }
 

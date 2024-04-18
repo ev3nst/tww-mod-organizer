@@ -4,7 +4,7 @@ import fs from 'fs';
 import { sync as mkdripSync } from 'mkdirp';
 
 import dbKeys from '../db/keys';
-import db from '../db';
+import { db } from '../db';
 
 export default async function saveModProfile() {
     ipcMain.handle(

@@ -4,7 +4,7 @@ import fs from 'fs';
 import { sync as mkdripSync } from 'mkdirp';
 
 import dbKeys from '../db/keys';
-import db from '../db';
+import { db } from '../db';
 import { retrieveModsMetaInformation } from './getModsMetaInformation';
 
 export async function retrieveModProfile(profileName) {
