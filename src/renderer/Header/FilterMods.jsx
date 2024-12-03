@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { Input } from '@nextui-org/react';
 import { Search } from '../Icons';
 
@@ -5,7 +6,6 @@ import { observer } from 'mobx-react';
 import { debounceEffect } from '../../helpers/util';
 import { runInAction } from 'mobx';
 import modFiles from '../../store/modFiles';
-import { useEffect, useState } from 'react';
 
 const FilterMods = () => {
     const [searchString, setSearchString] = useState('');
